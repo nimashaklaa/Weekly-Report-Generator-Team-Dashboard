@@ -1,0 +1,37 @@
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Maven
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets
+.env
+.env.*
+*.properties.local
+application-local.properties
+application-secret.properties
+
+# Spring Boot
+spring-shell.log
+
+# Node / Frontend (if added later)
+node_modules/
+dist/
+build/
+.npm/
