@@ -26,7 +26,7 @@ public class SecurityConfig {
     private final JwtFilter jwtAuthFilter;
 
     @Bean
-    public SecurityFilterChain springSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer:: disable)
