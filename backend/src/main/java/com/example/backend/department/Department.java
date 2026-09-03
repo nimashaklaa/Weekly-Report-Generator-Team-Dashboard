@@ -1,6 +1,6 @@
-package com.example.backend.role;
+package com.example.backend.department;
 
-import com.example.backend.common.SystemEntity;
+import com.example.backend.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -13,9 +13,14 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "role")
-public class Role extends SystemEntity {
+@Table(name = "departments")
+public class Department extends BaseEntity {
 
     @Column(unique = true, nullable = false)
     private String name;
+
+    private String description;
+
+    @Column(nullable = false)
+    private boolean isActive = true;
 }
