@@ -1,6 +1,8 @@
 package com.example.backend.user;
 
 import com.example.backend.common.BaseEntity;
+import com.example.backend.department.Department;
+import com.example.backend.department.JobTitle;
 import com.example.backend.role.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -36,8 +38,19 @@ public class User extends BaseEntity implements UserDetails, Principal {
 
     private String password;
 
+    @Column(length = 512)
+    private String avatarUrl;
+
     private boolean accountLocked;
     private boolean enabled;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_title_id")
+    private JobTitle jobTitle;
 
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles;
@@ -48,6 +61,7 @@ public class User extends BaseEntity implements UserDetails, Principal {
     }
 
     @Override
+    @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles
                 .stream()
@@ -61,6 +75,7 @@ public class User extends BaseEntity implements UserDetails, Principal {
     }
 
     @Override
+    @NonNull
     public String getUsername() {
         return email;
     }
