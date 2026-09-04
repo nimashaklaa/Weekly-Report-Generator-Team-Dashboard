@@ -149,10 +149,21 @@ public class AuthenticationService {
     }
 
     public void logout(String authHeader) {
-        if(authHeader ==null || !authHeader.startsWith("Bearer")){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return;
         }
         String jwt = authHeader.substring(7);
-        tokenRepository.findByToken(jwt).ifPresent(tokenRepository::delete);
+        String userEmail = jwtService.extractUsername(jwt);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        Token revokedToken = Token.builder()
+                .token(jwt)
+                .tokenType(TokenType.BEARER)
+                .expired(true)
+                .revoked(true)
+                .createdAt(LocalDateTime.now())
+                .user(user)
+                .build();
+        tokenRepository.save(revokedToken);
     }
 }

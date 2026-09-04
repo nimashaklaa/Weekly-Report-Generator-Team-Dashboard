@@ -1,5 +1,6 @@
 package com.example.backend.security;
 
+import com.example.backend.auth.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TokenRepository tokenRepository;
 
 
     @Override
@@ -31,7 +33,8 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain chain
             ) throws ServletException, IOException {
-        if(request.getServletPath().contains("/auth")) {
+        String path = request.getServletPath();
+        if (path.contains("/auth") && !path.contains("/auth/logout")) {
             chain.doFilter(request, response);
             return;
         }
@@ -46,6 +49,13 @@ public class JwtFilter extends OncePerRequestFilter {
         try{
             userEmail = jwtService.extractUsername(jwt);
             if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                boolean isRevoked = tokenRepository.findByToken(jwt)
+                        .map(t -> t.isRevoked() || t.isExpired())
+                        .orElse(false);
+                if (isRevoked) {
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked");
+                    return;
+                }
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
                 if(jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
