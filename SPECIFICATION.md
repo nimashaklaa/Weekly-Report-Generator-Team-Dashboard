@@ -358,7 +358,18 @@ Client                  JwtAuthFilter              SecurityContext         Contr
 }
 ```
 
-#### 5.1.4 Role Assignment (ADMIN only)
+#### 5.1.4 Logout & Token Revocation
+
+JWT is stateless by design — once issued it is valid until expiry. To make logout meaningful, a **blocklist approach** is used:
+
+1. Client sends `POST /auth/logout` with `Authorization: Bearer <token>`.
+2. The token is saved to the `tokens` table with `revoked = true` and `expired = true`.
+3. `JwtFilter` checks the blocklist on every request — if the token is found with `revoked || expired`, the request is rejected with `401`.
+4. The token is **only** written to `tokens` on logout, not on login, keeping the DB load minimal (valid tokens never touch the DB).
+
+> Note: `/auth/logout` is excluded from the `/auth/**` filter bypass so the JWT is still extracted and the user identity can be resolved before revoking.
+
+#### 5.1.5 Role Assignment (ADMIN only)
 
 - `PUT /api/admin/users/{id}/roles` — replaces the user's role set.
 
@@ -759,9 +770,10 @@ public enum NotificationType {
 
 | Method | Path | Role | Description |
 |--------|------|------|-------------|
-| `POST` | `/auth/register` | Public | Register new user. Returns JWT + profile. |
-| `POST` | `/auth/login` | Public | Authenticate. Returns access token. |
-| `POST` | `/auth/logout` | Authenticated | Invalidate session. |
+| `POST` | `/auth/register` | Public | Register new user. Sends activation email. |
+| `POST` | `/auth/login` | Public | Authenticate. Returns access token + user profile. Also mapped as `/auth/authenticate`. |
+| `GET`  | `/auth/activate-account` | Public | Activates account via 6-digit token sent by email. |
+| `POST` | `/auth/logout` | Authenticated | Revokes the JWT by adding it to the token blocklist (`tokens` table with `revoked=true`). Subsequent requests with the same token are rejected with 401. |
 | `GET`  | `/auth/me` | Authenticated | Returns current user profile + roles. |
 
 ---
