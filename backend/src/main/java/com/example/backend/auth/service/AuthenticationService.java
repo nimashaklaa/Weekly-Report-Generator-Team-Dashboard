@@ -147,4 +147,12 @@ public class AuthenticationService {
         savedToke.setValidatedAt(LocalDateTime.now());
         tokenRepository.save(savedToke);
     }
+
+    public void logout(String authHeader) {
+        if(authHeader ==null || !authHeader.startsWith("Bearer")){
+            return;
+        }
+        String jwt = authHeader.substring(7);
+        tokenRepository.findByToken(jwt).ifPresent(tokenRepository::delete);
+    }
 }

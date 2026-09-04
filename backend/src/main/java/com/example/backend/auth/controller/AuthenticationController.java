@@ -36,6 +36,11 @@ public class AuthenticationController {
     ) {
         return ResponseEntity.ok(service.authenticate(request));
     }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
+        service.logout(authHeader);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/activate-account")
     public void confirm(@RequestParam String token) throws MessagingException {
