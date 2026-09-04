@@ -1,12 +1,14 @@
 package com.example.backend.auth;
 
 
+import com.example.backend.department.DepartmentRepository;
+import com.example.backend.department.JobTitleRepository;
+import com.example.backend.email.EmailService;
 import com.example.backend.email.EmailTemplateName;
 import com.example.backend.role.RoleRepository;
 import com.example.backend.security.JwtService;
 import com.example.backend.user.User;
 import com.example.backend.user.UserRepository;
-import com.example.backend.email.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,14 +36,26 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final DepartmentRepository departmentRepository;
+    private final JobTitleRepository jobTitleRepository;
 
     @Value("${application.security.mailing.frontend.activation-url}")
     private String activationUrl;
 
     public void register(@Valid RegistrationRequest request) throws MessagingException {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already registered");
+        }
         var userRole = roleRepository.findByName("TEAM_MEMBER").orElseThrow(
                 ()-> new IllegalStateException("TEAM_MEMBER ROLE was not initialized")
         );
+        var department = request.getDepartmentId() != null
+                ? departmentRepository.findById(request.getDepartmentId()).orElse(null)
+                : null;
+        var jobTitle = request.getJobTitleId() != null
+                ? jobTitleRepository.findById(request.getJobTitleId()).orElse(null)
+                : null;
+
         var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -50,6 +64,8 @@ public class AuthenticationService {
                 .accountLocked(false)
                 .enabled(false)
                 .roles(List.of(userRole))
+                .department(department)
+                .jobTitle(jobTitle)
                 .build();
         userRepository.save(user);
         sendValidationEmail(user);
@@ -74,6 +90,7 @@ public class AuthenticationService {
         String generatedToken = generateActivationCode();
         var token = Token.builder()
                 .token(generatedToken)
+                .tokenType(TokenType.BEARER)
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(15))
                 .user(user)
