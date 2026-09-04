@@ -1,16 +1,16 @@
-package com.example.backend.config;
+package com.example.backend.seed;
 
-import com.example.backend.department.Department;
-import com.example.backend.department.DepartmentRepository;
-import com.example.backend.department.JobLevel;
-import com.example.backend.department.JobTitle;
-import com.example.backend.department.JobTitleRepository;
+import com.example.backend.department.model.Department;
+import com.example.backend.department.model.JobLevel;
+import com.example.backend.department.model.JobTitle;
+import com.example.backend.department.repository.DepartmentRepository;
+import com.example.backend.department.repository.JobTitleRepository;
 import com.example.backend.role.Role;
 import com.example.backend.role.RoleRepository;
-import com.example.backend.team.Team;
-import com.example.backend.team.TeamRepository;
+import com.example.backend.team.model.Team;
+import com.example.backend.team.repository.TeamRepository;
 import com.example.backend.user.User;
-import com.example.backend.user.UserRepository;
+import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;

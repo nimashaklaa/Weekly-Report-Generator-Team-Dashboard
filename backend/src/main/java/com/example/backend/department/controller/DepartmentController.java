@@ -1,5 +1,9 @@
-package com.example.backend.department;
+package com.example.backend.department.controller;
 
+import com.example.backend.department.model.Department;
+import com.example.backend.department.model.JobTitle;
+import com.example.backend.department.repository.DepartmentRepository;
+import com.example.backend.department.repository.JobTitleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

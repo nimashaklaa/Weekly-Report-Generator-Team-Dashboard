@@ -3,7 +3,7 @@ package com.example.backend.report.model;
 import com.example.backend.common.BaseEntity;
 import com.example.backend.report.enums.MoodType;
 import com.example.backend.report.enums.ReportStatus;
-import com.example.backend.team.Team;
+import com.example.backend.team.model.Team;
 import com.example.backend.user.User;
 import jakarta.persistence.*;
 import lombok.*;

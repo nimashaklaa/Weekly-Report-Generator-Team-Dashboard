@@ -1,8 +1,8 @@
 package com.example.backend.report.model;
 
 import com.example.backend.common.BaseEntity;
-import com.example.backend.project.Category;
-import com.example.backend.project.Project;
+import com.example.backend.project.model.Category;
+import com.example.backend.project.model.Project;
 import com.example.backend.report.enums.TaskPriority;
 import com.example.backend.report.enums.TaskStatus;
 import jakarta.persistence.*;

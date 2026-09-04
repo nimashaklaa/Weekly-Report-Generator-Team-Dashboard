@@ -1,7 +1,11 @@
-package com.example.backend.auth;
+package com.example.backend.auth.controller;
 
+import com.example.backend.auth.dto.AuthenticationRequest;
+import com.example.backend.auth.dto.AuthenticationResponse;
+import com.example.backend.auth.dto.RegistrationRequest;
+import com.example.backend.auth.service.AuthenticationService;
 import com.example.backend.user.User;
-import com.example.backend.user.UserResponse;
+import com.example.backend.user.dto.UserResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -26,7 +30,7 @@ public class AuthenticationController {
         return ResponseEntity.accepted().build();
     }
 
-    @PostMapping("/authenticate")
+    @PostMapping({"/authenticate", "/login"})
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody @Valid AuthenticationRequest request
     ) {

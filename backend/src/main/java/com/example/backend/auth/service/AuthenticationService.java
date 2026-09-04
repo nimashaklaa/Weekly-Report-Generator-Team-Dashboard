@@ -1,14 +1,20 @@
-package com.example.backend.auth;
+package com.example.backend.auth.service;
 
-
-import com.example.backend.department.DepartmentRepository;
-import com.example.backend.department.JobTitleRepository;
+import com.example.backend.auth.Token;
+import com.example.backend.auth.TokenRepository;
+import com.example.backend.auth.TokenType;
+import com.example.backend.auth.dto.AuthenticationRequest;
+import com.example.backend.auth.dto.AuthenticationResponse;
+import com.example.backend.auth.dto.RegistrationRequest;
+import com.example.backend.department.repository.DepartmentRepository;
+import com.example.backend.department.repository.JobTitleRepository;
 import com.example.backend.email.EmailService;
 import com.example.backend.email.EmailTemplateName;
 import com.example.backend.role.RoleRepository;
 import com.example.backend.security.JwtService;
 import com.example.backend.user.User;
-import com.example.backend.user.UserRepository;
+import com.example.backend.user.dto.UserResponse;
+import com.example.backend.user.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -117,12 +123,13 @@ public class AuthenticationService {
                         request.getPassword()
                 )
         );
-        var claims = new HashMap<String, Object>();
         var user = ((User) auth.getPrincipal());
+        var claims = new HashMap<String, Object>();
         claims.put("fullname", user.fullName());
         var jwtToken = jwtService.generateToken(claims, user);
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
+                .user(UserResponse.from(user))
                 .build();
     }
 

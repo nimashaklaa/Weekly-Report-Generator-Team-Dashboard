@@ -1,4 +1,4 @@
-package com.example.backend.project;
+package com.example.backend.project.model;
 
 import com.example.backend.common.BaseEntity;
 import jakarta.persistence.Column;
@@ -17,7 +17,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Entity
 @Table(name = "projects")
-
 public class Project extends BaseEntity {
     @Column(unique = true, nullable = false, length = 150)
     private String name;

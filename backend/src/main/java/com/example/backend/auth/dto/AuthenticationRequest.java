@@ -1,8 +1,7 @@
-package com.example.backend.auth;
+package com.example.backend.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthenticationRequest {
-    
+
     @Email(message = "Email is not formatted")
     @NotBlank(message = "Email is required")
     private String email;

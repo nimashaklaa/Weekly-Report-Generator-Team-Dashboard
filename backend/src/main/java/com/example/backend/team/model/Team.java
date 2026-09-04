@@ -1,4 +1,4 @@
-package com.example.backend.team;
+package com.example.backend.team.model;
 
 import com.example.backend.common.BaseEntity;
 import com.example.backend.user.User;

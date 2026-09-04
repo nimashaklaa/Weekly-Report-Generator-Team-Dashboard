@@ -1,8 +1,8 @@
 package com.example.backend.user;
 
 import com.example.backend.common.BaseEntity;
-import com.example.backend.department.Department;
-import com.example.backend.department.JobTitle;
+import com.example.backend.department.model.Department;
+import com.example.backend.department.model.JobTitle;
 import com.example.backend.role.Role;
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,5 +1,6 @@
-package com.example.backend.user;
+package com.example.backend.user.service;
 
+import com.example.backend.user.repository.UserRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

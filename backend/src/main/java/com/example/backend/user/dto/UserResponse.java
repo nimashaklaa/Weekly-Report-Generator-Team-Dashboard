@@ -1,6 +1,7 @@
-package com.example.backend.user;
+package com.example.backend.user.dto;
 
 import com.example.backend.role.Role;
+import com.example.backend.user.User;
 import lombok.Builder;
 import lombok.Getter;
 
