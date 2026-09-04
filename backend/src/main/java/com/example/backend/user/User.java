@@ -96,6 +96,6 @@ public class User extends BaseEntity implements UserDetails, Principal {
     }
 
     public String fullName() {
-        return this.firstName + " " + this.lastName;
+        return (this.firstName != null ? this.firstName : "") + " " + (this.lastName != null ? this.lastName : "");
     }
 }
