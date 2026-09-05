@@ -18,6 +18,8 @@ public class UserResponse {
     private List<String> roles;
     private String department;
     private String jobTitle;
+    private boolean accountLocked;
+    private boolean enabled;
 
     public static UserResponse from(User user) {
         return UserResponse.builder()
@@ -29,6 +31,8 @@ public class UserResponse {
                 .roles(user.getRoles().stream().map(Role::getName).toList())
                 .department(user.getDepartment() != null ? user.getDepartment().getName() : null)
                 .jobTitle(user.getJobTitle() != null ? user.getJobTitle().getTitle() : null)
+                .accountLocked(user.isAccountLocked())
+                .enabled(user.isEnabled())
                 .build();
     }
 }
