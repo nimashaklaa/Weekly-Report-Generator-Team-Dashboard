@@ -18,13 +18,15 @@ export interface CreateReportPayload {
 }
 
 export interface UpdateReportPayload {
+  teamId: number
+  weekYear: number
+  weekNumber: number
   weekSummary?: string
   overallMood?: string
   blockers?: string
   nextWeekPlan?: string
   generalNotes?: string
   tasks?: Array<{
-    id?: number
     title: string
     description?: string
     status: string
@@ -32,6 +34,7 @@ export interface UpdateReportPayload {
     hoursSpent: number
     projectId?: number
     categoryId?: number
+    sortOrder?: number
   }>
   hoursBreakdown?: {
     meetingHours?: number

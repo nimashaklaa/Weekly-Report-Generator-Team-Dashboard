@@ -31,8 +31,11 @@ export interface ReportTask {
   priority?: TaskPriority
   hoursSpent: number
   projectId?: number
+  projectName?: string
   categoryId?: number
+  categoryName?: string
   sortOrder: number
+  outputDeliverable?: string
 }
 
 export interface HoursBreakdown {
@@ -47,8 +50,9 @@ export interface HoursBreakdown {
 export interface ReportComment {
   id: number
   body: string
-  author: User
-  isCorrectionRequest: boolean
+  authorId: number
+  authorName: string
+  correctionRequest: boolean
   versionNumber?: number
   createdDate: string
 }
@@ -61,9 +65,12 @@ export interface ReportVersion {
 
 export interface WeeklyReport {
   id: number
-  author: User
-  reviewer?: User
-  team?: { id: number; name: string }
+  authorId: number
+  authorName: string
+  reviewerId?: number
+  reviewerName?: string
+  teamId?: number
+  teamName?: string
   weekYear: number
   weekNumber: number
   status: ReportStatus
@@ -75,8 +82,10 @@ export interface WeeklyReport {
   currentVersion: number
   submittedAt?: string
   reviewedAt?: string
+  createdDate?: string
   tasks: ReportTask[]
   hoursBreakdown?: HoursBreakdown
+  comments?: ReportComment[]
 }
 
 export interface WeeklyReportSummary {
@@ -87,11 +96,11 @@ export interface WeeklyReportSummary {
   overallMood?: MoodType
   currentVersion: number
   submittedAt?: string
-  reviewedAt?: string
-  author: { id: number; firstName: string; lastName: string; email: string }
-  team?: { id: number; name: string }
-  taskCount: number
-  totalHours?: number
+  createdDate?: string
+  authorId: number
+  authorName: string
+  teamId?: number
+  teamName?: string
 }
 
 // ─── Teams ────────────────────────────────────────────────────────────────────

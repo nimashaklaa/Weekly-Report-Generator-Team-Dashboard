@@ -60,11 +60,11 @@ export default function MyReportsPage() {
                       Week {report.weekNumber}, {report.weekYear}
                     </CardTitle>
                     <p className="text-sm text-muted-foreground mt-0.5">
-                      {report.taskCount} task{report.taskCount !== 1 ? 's' : ''}
-                      {report.totalHours ? ` · ${report.totalHours}h` : ''}
                       {report.submittedAt
-                        ? ` · Submitted ${format(new Date(report.submittedAt), 'MMM d')}`
-                        : ''}
+                        ? `Submitted ${format(new Date(report.submittedAt), 'MMM d')}`
+                        : report.createdDate
+                          ? `Created ${format(new Date(report.createdDate), 'MMM d')}`
+                          : ''}
                     </p>
                   </div>
                   <StatusBadge status={report.status} />

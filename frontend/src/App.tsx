@@ -12,10 +12,12 @@ import PersonalDashboard from '@/pages/dashboard/PersonalDashboard'
 import TeamDashboard from '@/pages/dashboard/TeamDashboard'
 import MyReportsPage from '@/pages/reports/MyReportsPage'
 import NewReportPage from '@/pages/reports/NewReportPage'
+import ReportEditPage from '@/pages/reports/ReportEditPage'
 import ReportDetailPage from '@/pages/reports/ReportDetailPage'
 import NotificationsPage from '@/pages/notifications/NotificationsPage'
 import ProjectsPage from '@/pages/projects/ProjectsPage'
 import UsersPage from '@/pages/admin/UsersPage'
+import TeamsPage from '@/pages/admin/TeamsPage'
 
 function AppRoutes() {
   const dispatch = useAppDispatch()
@@ -44,6 +46,7 @@ function AppRoutes() {
         />
         <Route path="/reports" element={<MyReportsPage />} />
         <Route path="/reports/new" element={<NewReportPage />} />
+        <Route path="/reports/:id/edit" element={<ReportEditPage />} />
         <Route path="/reports/:id" element={<ReportDetailPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
@@ -52,6 +55,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute roles={['ADMIN']}>
               <UsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/teams"
+          element={
+            <ProtectedRoute roles={['ADMIN']}>
+              <TeamsPage />
             </ProtectedRoute>
           }
         />

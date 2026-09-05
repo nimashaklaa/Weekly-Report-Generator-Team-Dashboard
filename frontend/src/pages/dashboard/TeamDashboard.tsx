@@ -126,15 +126,13 @@ export default function TeamDashboard() {
                 <TableHead>Member</TableHead>
                 <TableHead>Week</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Tasks</TableHead>
-                <TableHead>Hours</TableHead>
                 <TableHead>Submitted</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {reports.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                     No reports found
                   </TableCell>
                 </TableRow>
@@ -145,13 +143,9 @@ export default function TeamDashboard() {
                     className="cursor-pointer"
                     onClick={() => navigate(`/reports/${r.id}`)}
                   >
-                    <TableCell className="font-medium">
-                      {r.author.firstName} {r.author.lastName}
-                    </TableCell>
+                    <TableCell className="font-medium">{r.authorName}</TableCell>
                     <TableCell>W{r.weekNumber} / {r.weekYear}</TableCell>
                     <TableCell><StatusBadge status={r.status} /></TableCell>
-                    <TableCell>{r.taskCount}</TableCell>
-                    <TableCell>{r.totalHours ? `${r.totalHours}h` : '—'}</TableCell>
                     <TableCell>
                       {r.submittedAt ? format(new Date(r.submittedAt), 'MMM d') : '—'}
                     </TableCell>

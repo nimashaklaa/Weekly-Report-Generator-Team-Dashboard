@@ -25,8 +25,8 @@ export default function ReportDetailPage() {
   const [showCorrection, setShowCorrection] = useState(false)
 
   const reportId = Number(id)
-  const isManager = user?.roles.includes('MANAGER') || user?.roles.includes('ADMIN')
-  const isAuthor = report?.author.id === user?.id
+  const isManager = user?.roles?.includes('MANAGER') || user?.roles?.includes('ADMIN')
+  const isAuthor = !user || report?.authorId === user?.id
   const canEdit = isAuthor && (report?.status === 'DRAFT' || report?.status === 'NEEDS_CORRECTION')
   const canSubmit = isAuthor && (report?.status === 'DRAFT' || report?.status === 'NEEDS_CORRECTION')
   const canApprove = isManager && report?.status === 'SUBMITTED'
@@ -101,7 +101,7 @@ export default function ReportDetailPage() {
             Week {report.weekNumber}, {report.weekYear}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {report.author.firstName} {report.author.lastName}
+            {report.authorName}
             {report.submittedAt && ` · Submitted ${format(new Date(report.submittedAt), 'MMM d, yyyy')}`}
           </p>
         </div>
@@ -239,9 +239,9 @@ export default function ReportDetailPage() {
             <p className="text-sm text-muted-foreground">No comments yet</p>
           )}
           {comments.map((c) => (
-            <div key={c.id} className={`p-3 rounded-md ${c.isCorrectionRequest ? 'bg-destructive/10 border border-destructive/20' : 'bg-muted'}`}>
+            <div key={c.id} className={`p-3 rounded-md ${c.correctionRequest ? 'bg-destructive/10 border border-destructive/20' : 'bg-muted'}`}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-sm font-medium">{c.author.firstName} {c.author.lastName}</p>
+                <p className="text-sm font-medium">{c.authorName}</p>
                 <p className="text-xs text-muted-foreground">{format(new Date(c.createdDate), 'MMM d, HH:mm')}</p>
               </div>
               <p className="text-sm whitespace-pre-wrap">{c.body}</p>
