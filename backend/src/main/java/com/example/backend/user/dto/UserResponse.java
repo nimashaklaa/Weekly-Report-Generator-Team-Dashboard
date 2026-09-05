@@ -28,7 +28,9 @@ public class UserResponse {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .avatarUrl(user.getAvatarUrl())
-                .roles(user.getRoles().stream().map(Role::getName).toList())
+                .roles(user.getRoles() != null
+                        ? user.getRoles().stream().map(Role::getName).toList()
+                        : List.of())
                 .department(user.getDepartment() != null ? user.getDepartment().getName() : null)
                 .jobTitle(user.getJobTitle() != null ? user.getJobTitle().getTitle() : null)
                 .accountLocked(user.isAccountLocked())

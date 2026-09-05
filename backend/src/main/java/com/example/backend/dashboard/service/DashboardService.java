@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.WeekFields;
 import java.util.LinkedHashMap;
@@ -45,7 +46,7 @@ public class DashboardService {
         return DashboardSummaryResponse.builder()
                 .totalUsers(userRepository.count())
                 .totalTeams(teamRepository.count())
-                .totalActiveProjects(projectRepository.findByIsActiveTrue().size())
+                .totalActiveProjects(projectRepository.countByIsActiveTrue())
                 .currentWeekYear(weekYear)
                 .currentWeekNumber(weekNumber)
                 .reportsThisWeek(breakdown)
@@ -116,6 +117,8 @@ public class DashboardService {
                 : 0.0;
 
         Map<String, Long> moodBreakdown = buildMoodBreakdown(userId);
+        BigDecimal rawAvg = reportRepository.avgHoursByAuthor(userId);
+        BigDecimal avgHours = rawAvg != null ? rawAvg.setScale(1, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO;
 
         return UserStatsResponse.builder()
                 .userId(userId)
@@ -127,7 +130,7 @@ public class DashboardService {
                 .needsCorrectionReports(needsCorrection)
                 .approvalRate(approvalRate)
                 .moodBreakdown(moodBreakdown)
-                .averageHoursPerWeek(reportRepository.avgHoursByAuthor(userId))
+                .averageHoursPerWeek(avgHours)
                 .build();
     }
 

@@ -12,6 +12,8 @@ public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
     List<Project> findByIsActiveTrue();
 
+    long countByIsActiveTrue();
+
     Page<Project> findAll(Pageable pageable);
 
     Page<Project> findAllByIsActive(boolean isActive, Pageable pageable);

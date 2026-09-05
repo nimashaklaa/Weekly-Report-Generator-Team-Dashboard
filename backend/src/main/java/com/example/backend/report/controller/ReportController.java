@@ -81,7 +81,7 @@ public class ReportController {
     @PatchMapping("/{id}")
     public ResponseEntity<WeeklyReportResponse> patchReport(
             @PathVariable Integer id,
-            @RequestBody WeeklyReportRequest request,
+            @RequestBody @Valid WeeklyReportRequest request,
             @AuthenticationPrincipal User currentUser
     ) {
         return ResponseEntity.ok(reportService.updateReport(id, request, currentUser));

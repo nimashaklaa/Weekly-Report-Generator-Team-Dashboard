@@ -85,11 +85,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiError> handleRuntime(RuntimeException ex,
                                                   HttpServletRequest request) {
+        // Do not expose raw exception messages — they may contain internal details
         return ResponseEntity.badRequest().body(ApiError.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error("Bad Request")
-                .message(ex.getMessage())
+                .message("The request could not be processed")
                 .path(request.getRequestURI())
                 .build());
     }
