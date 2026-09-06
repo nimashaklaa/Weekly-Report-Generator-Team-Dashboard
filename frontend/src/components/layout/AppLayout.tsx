@@ -17,13 +17,13 @@ import {
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/reports', icon: FileText, label: 'My Reports' },
-  { to: '/projects', icon: FolderKanban, label: 'Projects' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
 ]
 
 const adminItems = [
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/teams', icon: Shield, label: 'Teams' },
+  { to: '/admin/projects', icon: FolderKanban, label: 'Projects' },
 ]
 
 export default function AppLayout() {

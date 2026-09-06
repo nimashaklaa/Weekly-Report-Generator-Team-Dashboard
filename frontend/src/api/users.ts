@@ -2,7 +2,7 @@ import type { Page, User } from '@/types'
 import api from './axios'
 
 export const usersApi = {
-  getAll: (params?: { role?: string; departmentId?: number; page?: number; size?: number }) =>
+  getAll: (params?: { role?: string; departmentId?: number; search?: string; page?: number; size?: number }) =>
     api.get<Page<User>>('/users', { params }).then((r) => r.data),
 
   getById: (id: number) =>

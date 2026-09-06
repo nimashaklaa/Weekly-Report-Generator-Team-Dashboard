@@ -23,11 +23,13 @@ export default function PersonalDashboard() {
 
   useEffect(() => {
     if (!user) return
-    Promise.all([
+    Promise.allSettled([
       dashboardApi.getUserStats(user.id),
       reportsApi.getMyReports(),
-    ]).then(([s, r]) => { setStats(s); setReports(r) })
-      .finally(() => setLoading(false))
+    ]).then(([statsResult, reportsResult]) => {
+      if (statsResult.status === 'fulfilled') setStats(statsResult.value)
+      if (reportsResult.status === 'fulfilled') setReports(reportsResult.value)
+    }).finally(() => setLoading(false))
   }, [user])
 
   if (loading) return (

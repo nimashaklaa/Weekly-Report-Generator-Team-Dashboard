@@ -81,4 +81,7 @@ export const reportsApi = {
 
   addComment: (id: number, body: string) =>
     api.post<ReportComment>(`/reports/${id}/comments`, { body }).then((r) => r.data),
+
+  deleteDraft: (id: number) =>
+    api.delete(`/reports/${id}`),
 }

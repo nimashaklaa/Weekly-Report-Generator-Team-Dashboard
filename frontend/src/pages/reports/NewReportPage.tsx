@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getISOWeek, getISOWeekYear, startOfISOWeek, endOfISOWeek, format } from 'date-fns'
 import { reportsApi } from '@/api/reports'
 import { teamsApi } from '@/api/teams'
+import { useAppSelector } from '@/store/hooks'
 import type { Team } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +18,7 @@ function toInputDate(d: Date) {
 
 export default function NewReportPage() {
   const navigate = useNavigate()
+  const currentUser = useAppSelector((s) => s.auth.user)
   const [teams, setTeams] = useState<Team[]>([])
   const [teamId, setTeamId] = useState('')
   const [pickedDate, setPickedDate] = useState(toInputDate(new Date()))
@@ -30,11 +32,17 @@ export default function NewReportPage() {
   const weekEnd = format(endOfISOWeek(selectedDate), 'MMM d, yyyy')
 
   useEffect(() => {
-    teamsApi.getAll({ activeOnly: true }).then((p) => {
-      setTeams(p.content)
-      if (p.content.length > 0) setTeamId(String(p.content[0].id))
+    if (!currentUser) return
+    teamsApi.getAll({ activeOnly: true, size: 100 }).then((p) => {
+      // Only show teams where the current user is a member or the manager
+      const myTeams = p.content.filter((t) =>
+        t.manager.id === currentUser.id ||
+        t.members.some((m) => m.id === currentUser.id)
+      )
+      setTeams(myTeams)
+      if (myTeams.length > 0) setTeamId(String(myTeams[0].id))
     })
-  }, [])
+  }, [currentUser])
 
   const handleCreate = async () => {
     if (!teamId) { setError('Please select a team'); return }

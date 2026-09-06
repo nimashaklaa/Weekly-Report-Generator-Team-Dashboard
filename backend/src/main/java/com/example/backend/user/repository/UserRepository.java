@@ -14,9 +14,13 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT DISTINCT u FROM User u JOIN u.roles r WHERE " +
            "(:role IS NULL OR r.name = :role) AND " +
-           "(:departmentId IS NULL OR u.department.id = :departmentId)")
+           "(:departmentId IS NULL OR u.department.id = :departmentId) AND " +
+           "(:search IS NULL OR LOWER(u.firstName) LIKE :search OR " +
+           "LOWER(u.lastName) LIKE :search OR " +
+           "LOWER(u.email) LIKE :search)")
     Page<User> findWithFilters(
             @Param("role") String role,
             @Param("departmentId") Integer departmentId,
+            @Param("search") String search,
             Pageable pageable);
 }

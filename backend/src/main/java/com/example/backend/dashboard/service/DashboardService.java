@@ -71,16 +71,20 @@ public class DashboardService {
         long submitted = reportRepository.countByTeamAndWeekAndStatus(teamId, year, week, ReportStatus.SUBMITTED);
         long needsCorrection = reportRepository.countByTeamAndWeekAndStatus(teamId, year, week, ReportStatus.NEEDS_CORRECTION);
         long approved = reportRepository.countByTeamAndWeekAndStatus(teamId, year, week, ReportStatus.APPROVED);
-        long reportedCount = draft + submitted + needsCorrection + approved;
+        // Drafts are still with the user — only count actually submitted reports
+        long submittedCount = submitted + needsCorrection + approved;
 
         double submissionRate = totalMembers > 0
-                ? Math.round((reportedCount * 100.0 / totalMembers) * 10) / 10.0
+                ? Math.round((submittedCount * 100.0 / totalMembers) * 10) / 10.0
                 : 0.0;
 
-        // Find members who have not submitted any report this week
-        Set<Integer> reportedAuthorIds = Set.copyOf(reportRepository.findAuthorIdsByTeamAndWeek(teamId, year, week));
+        // Missing = members who have no submitted/approved/needs-correction report this week (drafts count as missing)
+        Set<Integer> submittedAuthorIds = Set.copyOf(
+                reportRepository.findAuthorIdsByTeamAndWeekAndStatuses(teamId, year, week,
+                        List.of(ReportStatus.SUBMITTED, ReportStatus.NEEDS_CORRECTION, ReportStatus.APPROVED))
+        );
         List<String> missingMembers = members.stream()
-                .filter(m -> !reportedAuthorIds.contains(m.getId()))
+                .filter(m -> !submittedAuthorIds.contains(m.getId()))
                 .map(User::fullName)
                 .toList();
 
@@ -90,14 +94,14 @@ public class DashboardService {
                 .weekYear(year)
                 .weekNumber(week)
                 .totalMembers(totalMembers)
-                .submittedCount(reportedCount)
+                .submittedCount(submittedCount)
                 .submissionRate(submissionRate)
                 .statusBreakdown(ReportStatusBreakdown.builder()
                         .draft(draft)
                         .submitted(submitted)
                         .needsCorrection(needsCorrection)
                         .approved(approved)
-                        .total(reportedCount)
+                        .total(submittedCount)
                         .build())
                 .missingMembers(missingMembers)
                 .build();

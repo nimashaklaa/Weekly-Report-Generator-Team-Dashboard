@@ -38,8 +38,11 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 
-    public Page<UserResponse> getAllUsers(String role, Integer departmentId, Pageable pageable) {
-        return userRepository.findWithFilters(role, departmentId, pageable)
+    public Page<UserResponse> getAllUsers(String role, Integer departmentId, String search, Pageable pageable) {
+        String searchPattern = (search != null && !search.isBlank())
+                ? "%" + search.trim().toLowerCase() + "%"
+                : null;
+        return userRepository.findWithFilters(role, departmentId, searchPattern, pageable)
                 .map(UserResponse::from);
     }
 

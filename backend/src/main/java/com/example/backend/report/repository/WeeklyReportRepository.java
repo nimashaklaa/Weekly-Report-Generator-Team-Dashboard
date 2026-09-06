@@ -43,6 +43,9 @@ public interface WeeklyReportRepository extends JpaRepository<WeeklyReport, Inte
     @Query("SELECT r.author.id FROM WeeklyReport r WHERE r.team.id = :teamId AND r.weekYear = :weekYear AND r.weekNumber = :weekNumber")
     List<Integer> findAuthorIdsByTeamAndWeek(@Param("teamId") Integer teamId, @Param("weekYear") int weekYear, @Param("weekNumber") int weekNumber);
 
+    @Query("SELECT r.author.id FROM WeeklyReport r WHERE r.team.id = :teamId AND r.weekYear = :weekYear AND r.weekNumber = :weekNumber AND r.status IN :statuses")
+    List<Integer> findAuthorIdsByTeamAndWeekAndStatuses(@Param("teamId") Integer teamId, @Param("weekYear") int weekYear, @Param("weekNumber") int weekNumber, @Param("statuses") List<ReportStatus> statuses);
+
     @Query("SELECT COUNT(r) FROM WeeklyReport r WHERE r.author.id = :userId")
     long countByAuthor(@Param("userId") Integer userId);
 

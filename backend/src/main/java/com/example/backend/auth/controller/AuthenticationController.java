@@ -6,6 +6,7 @@ import com.example.backend.auth.dto.RegistrationRequest;
 import com.example.backend.auth.service.AuthenticationService;
 import com.example.backend.user.User;
 import com.example.backend.user.dto.UserResponse;
+import com.example.backend.user.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final AuthenticationService service;
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(
@@ -52,7 +54,11 @@ public class AuthenticationController {
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(UserResponse.from(user));
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        // Reload fresh from DB so roles always reflect current state
+        return ResponseEntity.ok(userService.getUserById(user.getId()));
     }
 
 }

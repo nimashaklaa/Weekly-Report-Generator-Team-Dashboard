@@ -49,7 +49,14 @@ function AppRoutes() {
         <Route path="/reports/:id/edit" element={<ReportEditPage />} />
         <Route path="/reports/:id" element={<ReportDetailPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/projects" element={<ProjectsPage />} />
+        <Route
+          path="/admin/projects"
+          element={
+            <ProtectedRoute roles={['ADMIN']}>
+              <ProjectsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/users"
           element={

@@ -4,7 +4,6 @@ import com.example.backend.team.model.Team;
 import com.example.backend.user.dto.UserResponse;
 import lombok.Builder;
 import lombok.Getter;
-
 import java.util.List;
 
 @Getter
@@ -18,8 +17,13 @@ public class TeamResponse {
     private List<UserResponse> members;
     private boolean active;
     private int memberCount;
+    private List<TeamProjectDetail> projects;
 
     public static TeamResponse from(Team team) {
+        return from(team, List.of());
+    }
+
+    public static TeamResponse from(Team team, List<TeamProjectDetail> projects) {
         return TeamResponse.builder()
                 .id(team.getId())
                 .name(team.getName())
@@ -30,6 +34,7 @@ public class TeamResponse {
                         : List.of())
                 .active(team.isActive())
                 .memberCount(team.getMembers() != null ? team.getMembers().size() : 0)
+                .projects(projects)
                 .build();
     }
 }

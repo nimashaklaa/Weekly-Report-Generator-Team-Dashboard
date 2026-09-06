@@ -78,6 +78,15 @@ public class ReportController {
         return ResponseEntity.ok(reportService.updateReport(id, request, currentUser));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReport(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal User currentUser
+    ) {
+        reportService.deleteReport(id, currentUser);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<WeeklyReportResponse> patchReport(
             @PathVariable Integer id,

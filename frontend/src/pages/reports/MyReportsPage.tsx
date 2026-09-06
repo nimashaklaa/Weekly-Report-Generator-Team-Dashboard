@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, FileText } from 'lucide-react'
+import { Plus, FileText, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { reportsApi } from '@/api/reports'
 import type { WeeklyReportSummary } from '@/types'
@@ -8,15 +8,34 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import StatusBadge from '@/components/shared/StatusBadge'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 export default function MyReportsPage() {
   const navigate = useNavigate()
   const [reports, setReports] = useState<WeeklyReportSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [confirmId, setConfirmId] = useState<number | null>(null)
 
   useEffect(() => {
     reportsApi.getMyReports().then(setReports).finally(() => setLoading(false))
   }, [])
+
+  const handleDelete = async () => {
+    if (confirmId === null) return
+    setDeletingId(confirmId)
+    setConfirmId(null)
+    try {
+      await reportsApi.deleteDraft(confirmId)
+      setReports((prev) => prev.filter((r) => r.id !== confirmId))
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">

@@ -33,13 +33,16 @@ export default function TeamsPage() {
   const [savingMembers, setSavingMembers] = useState(false)
 
   useEffect(() => {
-    Promise.all([
-      teamsApi.getAll({ size: 100 }),
-      usersApi.getAll({ size: 100 }),
-    ]).then(([t, u]) => {
-      setTeams(t.content)
-      setUsers(u.content)
-    }).finally(() => setLoading(false))
+    teamsApi.getAll({ size: 100 })
+      .then((t) => setTeams(t.content))
+      .finally(() => setLoading(false))
+
+    usersApi.getAll({ size: 100 })
+      .then((u) => setUsers(u.content))
+      .catch(() => {
+        // fallback: try fetching without size param
+        usersApi.getAll().then((u) => setUsers(u.content)).catch(() => {})
+      })
   }, [])
 
   const openCreate = () => {
@@ -213,7 +216,13 @@ export default function TeamsPage() {
             <div className="space-y-2">
               <Label>Manager</Label>
               <Select value={managerId} onValueChange={(v) => setManagerId(v ?? '')}>
-                <SelectTrigger><SelectValue placeholder="Select manager" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select manager">
+                    {managerId
+                      ? (() => { const m = users.find((u) => String(u.id) === managerId); return m ? `${m.firstName} ${m.lastName}` : undefined })()
+                      : undefined}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   {users.map((u) => (
                     <SelectItem key={u.id} value={String(u.id)}>

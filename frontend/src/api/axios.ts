@@ -13,9 +13,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    const status: number = error.response?.status ?? 0
+    const url: string = error.config?.url ?? ''
+    // Any auth failure on non-login endpoints → force logout
+    if ((status === 401 || status === 403) && !url.includes('/auth/login') && !url.includes('/auth/authenticate')) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      window.location.replace('/login')
     }
     return Promise.reject(error)
   }

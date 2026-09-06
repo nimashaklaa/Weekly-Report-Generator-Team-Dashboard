@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { reportsApi } from '@/api/reports'
-import type { WeeklyReport, ReportTask } from '@/types'
+import { projectsApi, categoriesApi } from '@/api/projects'
+import type { WeeklyReport, ReportTask, Project, Category } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -22,6 +23,30 @@ const MOODS = [
 const TASK_STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'CARRIED_OVER', 'BLOCKED']
 const PRIORITIES = ['HIGH', 'MEDIUM', 'LOW']
 
+const STATUS_COLORS: Record<string, string> = {
+  NOT_STARTED: '#94a3b8',
+  IN_PROGRESS: '#3b82f6',
+  COMPLETED: '#22c55e',
+  CARRIED_OVER: '#f59e0b',
+  BLOCKED: '#ef4444',
+}
+
+const PRIORITY_COLORS: Record<string, string> = {
+  HIGH: '#ef4444',
+  MEDIUM: '#f59e0b',
+  LOW: '#22c55e',
+}
+
+function ColorDot({ color }: { color?: string }) {
+  if (!color) return null
+  return (
+    <span
+      className="inline-block w-2 h-2 rounded-full shrink-0"
+      style={{ backgroundColor: color }}
+    />
+  )
+}
+
 interface TaskRow {
   key: number
   title: string
@@ -29,6 +54,8 @@ interface TaskRow {
   status: string
   priority: string
   hoursSpent: string
+  projectId: string
+  categoryId: string
 }
 
 interface Hours {
@@ -47,6 +74,8 @@ const newTask = (): TaskRow => ({
   status: 'IN_PROGRESS',
   priority: 'MEDIUM',
   hoursSpent: '0',
+  projectId: '',
+  categoryId: '',
 })
 
 export default function ReportEditPage() {
@@ -58,6 +87,8 @@ export default function ReportEditPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [projects, setProjects] = useState<Project[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   const [weekSummary, setWeekSummary] = useState('')
   const [mood, setMood] = useState('')
@@ -72,6 +103,11 @@ export default function ReportEditPage() {
     reviewHours: '0',
     otherHours: '0',
   })
+
+  useEffect(() => {
+    projectsApi.getAll().then((p) => setProjects(p.content)).catch(() => {})
+    categoriesApi.getAll().then((p) => setCategories(p.content)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     reportsApi.getById(reportId).then((r) => {
@@ -89,6 +125,8 @@ export default function ReportEditPage() {
           status: t.status,
           priority: t.priority ?? 'MEDIUM',
           hoursSpent: String(t.hoursSpent ?? 0),
+          projectId: t.projectId ? String(t.projectId) : '',
+          categoryId: t.categoryId ? String(t.categoryId) : '',
         })))
       }
       if (r.hoursBreakdown) {
@@ -139,6 +177,8 @@ export default function ReportEditPage() {
           priority: t.priority,
           hoursSpent: parseFloat(t.hoursSpent) || 0,
           sortOrder: i,
+          projectId: t.projectId ? Number(t.projectId) : undefined,
+          categoryId: t.categoryId ? Number(t.categoryId) : undefined,
         })),
         hoursBreakdown: {
           meetingHours: parseFloat(hours.meetingHours) || 0,
@@ -248,33 +288,136 @@ export default function ReportEditPage() {
                 value={task.description}
                 onChange={(e) => updateTask(task.key, 'description', e.target.value)}
               />
-              <div className="grid grid-cols-3 gap-2">
-                <Select value={task.status} onValueChange={(v) => updateTask(task.key, 'status', v ?? task.status)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {TASK_STATUSES.map((s) => (
-                      <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={task.priority} onValueChange={(v) => updateTask(task.key, 'priority', v ?? task.priority)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {PRIORITIES.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    placeholder="Hours"
-                    value={task.hoursSpent}
-                    onChange={(e) => updateTask(task.key, 'hoursSpent', e.target.value)}
-                  />
-                  <span className="text-sm text-muted-foreground shrink-0">hrs</span>
+              <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_100px_1fr_1fr] gap-3">
+                {/* Status */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <Select value={task.status} onValueChange={(v) => updateTask(task.key, 'status', v ?? task.status)}>
+                    <SelectTrigger>
+                      <SelectValue>
+                        <span className="flex items-center gap-1.5">
+                          <ColorDot color={STATUS_COLORS[task.status]} />
+                          {task.status.replace(/_/g, ' ')}
+                        </span>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TASK_STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          <span className="flex items-center gap-1.5">
+                            <ColorDot color={STATUS_COLORS[s]} />
+                            {s.replace(/_/g, ' ')}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Priority */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Priority</p>
+                  <Select value={task.priority} onValueChange={(v) => updateTask(task.key, 'priority', v ?? task.priority)}>
+                    <SelectTrigger>
+                      <SelectValue>
+                        <span className="flex items-center gap-1.5">
+                          <ColorDot color={PRIORITY_COLORS[task.priority]} />
+                          {task.priority}
+                        </span>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PRIORITIES.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          <span className="flex items-center gap-1.5">
+                            <ColorDot color={PRIORITY_COLORS[p]} />
+                            {p}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Hours */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Hours</p>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={task.hoursSpent}
+                      onChange={(e) => updateTask(task.key, 'hoursSpent', e.target.value)}
+                    />
+                    <span className="text-xs text-muted-foreground shrink-0">h</span>
+                  </div>
+                </div>
+                {/* Project */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Project</p>
+                  {(() => {
+                    const proj = projects.find((p) => String(p.id) === task.projectId)
+                    return (
+                      <Select
+                        value={task.projectId || undefined}
+                        onValueChange={(v) => updateTask(task.key, 'projectId', v ?? '')}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={projects.length === 0 ? 'None' : 'Select…'}>
+                            {proj && (
+                              <span className="flex items-center gap-1.5">
+                                <ColorDot color={proj.colorHex} />
+                                {proj.name}
+                              </span>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {projects.map((p) => (
+                            <SelectItem key={p.id} value={String(p.id)}>
+                              <span className="flex items-center gap-1.5">
+                                <ColorDot color={p.colorHex} />
+                                {p.name}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )
+                  })()}
+                </div>
+                {/* Category */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Category</p>
+                  {(() => {
+                    const cat = categories.find((c) => String(c.id) === task.categoryId)
+                    return (
+                      <Select
+                        value={task.categoryId || undefined}
+                        onValueChange={(v) => updateTask(task.key, 'categoryId', v ?? '')}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={categories.length === 0 ? 'None' : 'Select…'}>
+                            {cat && (
+                              <span className="flex items-center gap-1.5">
+                                <ColorDot color={cat.colorHex} />
+                                {cat.name}
+                              </span>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((c) => (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              <span className="flex items-center gap-1.5">
+                                <ColorDot color={c.colorHex} />
+                                {c.name}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )
+                  })()}
                 </div>
               </div>
             </div>

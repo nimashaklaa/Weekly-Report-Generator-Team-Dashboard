@@ -27,9 +27,10 @@ public class UserController {
     public ResponseEntity<Page<UserResponse>> getAllUsers(
             @RequestParam(required = false) String role,
             @RequestParam(required = false) Integer departmentId,
+            @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "firstName") Pageable pageable
     ) {
-        return ResponseEntity.ok(userService.getAllUsers(role, departmentId, pageable));
+        return ResponseEntity.ok(userService.getAllUsers(role, departmentId, search, pageable));
     }
 
     @GetMapping("/{id}")

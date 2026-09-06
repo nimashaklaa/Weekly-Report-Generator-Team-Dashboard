@@ -6,13 +6,18 @@ interface AuthState {
   user: User | null
   token: string | null
   loading: boolean
+  fetchingMe: boolean
   error: string | null
 }
 
+const storedToken = localStorage.getItem('token')
+
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token'),
+  token: storedToken,
   loading: false,
+  // If a token already exists we must wait for /auth/me before rendering role-gated UI
+  fetchingMe: !!storedToken,
   error: null,
 }
 
@@ -55,6 +60,7 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => { state.loading = true; state.error = null })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false
+        state.fetchingMe = false
         state.token = action.payload.accessToken
         state.user = action.payload.user
       })
@@ -66,15 +72,17 @@ const authSlice = createSlice({
         state.user = null
         state.token = null
       })
+      .addCase(fetchMe.pending, (state) => { state.fetchingMe = true })
       .addCase(fetchMe.fulfilled, (state, action) => {
+        state.fetchingMe = false
         state.user = action.payload
       })
-      .addCase(fetchMe.rejected, (state, action) => {
-        if (action.payload === 401) {
-          state.user = null
-          state.token = null
-          localStorage.removeItem('token')
-        }
+      .addCase(fetchMe.rejected, (state) => {
+        // Any failure on /auth/me means the session is invalid — clear everything
+        state.fetchingMe = false
+        state.user = null
+        state.token = null
+        localStorage.removeItem('token')
       })
   },
 })

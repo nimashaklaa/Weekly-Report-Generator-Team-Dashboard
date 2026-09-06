@@ -2,7 +2,7 @@ import type { Page, Team } from '@/types'
 import api from './axios'
 
 export const teamsApi = {
-  getAll: (params?: { activeOnly?: boolean; page?: number; size?: number }) =>
+  getAll: (params?: { activeOnly?: boolean; managerId?: number; page?: number; size?: number }) =>
     api.get<Page<Team>>('/teams', { params }).then((r) => r.data),
 
   getById: (id: number) =>

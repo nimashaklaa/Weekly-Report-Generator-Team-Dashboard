@@ -35,7 +35,7 @@ public class DashboardController {
     }
 
     @GetMapping("/users/{userId}/stats")
-    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN') or principal.id == #userId")
     public ResponseEntity<UserStatsResponse> getUserStats(@PathVariable Integer userId) {
         return ResponseEntity.ok(dashboardService.getUserStats(userId));
     }

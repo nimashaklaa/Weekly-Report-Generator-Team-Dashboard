@@ -133,6 +133,19 @@ public class ReportService {
                 .map(this::toSummaryResponse);
     }
 
+    // ─── DELETE ───────────────────────────────────────────────────────────────
+
+    public void deleteReport(Integer id, User currentUser) {
+        var report = findReport(id);
+        if (!report.getAuthor().getId().equals(currentUser.getId())) {
+            throw new ForbiddenActionException("Only the author can delete this report");
+        }
+        if (report.getStatus() != ReportStatus.DRAFT) {
+            throw new ForbiddenActionException("Only DRAFT reports can be deleted");
+        }
+        reportRepository.delete(report);
+    }
+
     // ─── WORKFLOW ─────────────────────────────────────────────────────────────
 
     public WeeklyReportResponse submitReport(Integer id, User currentUser) {

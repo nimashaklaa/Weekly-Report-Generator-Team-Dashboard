@@ -3,6 +3,7 @@ package com.example.backend.team.controller;
 import com.example.backend.team.dto.CreateTeamRequest;
 import com.example.backend.team.dto.TeamResponse;
 import com.example.backend.team.dto.UpdateMembersRequest;
+import com.example.backend.team.dto.UpdateProjectMembersRequest;
 import com.example.backend.team.dto.UpdateTeamRequest;
 import com.example.backend.team.service.TeamService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,9 +35,10 @@ public class TeamController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<TeamResponse>> getAllTeams(
             @RequestParam(required = false) Boolean activeOnly,
+            @RequestParam(required = false) Integer managerId,
             @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        return ResponseEntity.ok(teamService.getAllTeams(activeOnly, pageable));
+        return ResponseEntity.ok(teamService.getAllTeams(activeOnly, managerId, pageable));
     }
 
     @GetMapping("/{id}")
@@ -61,6 +63,34 @@ public class TeamController {
             @RequestBody @Valid UpdateMembersRequest request
     ) {
         return ResponseEntity.ok(teamService.updateMembers(id, request));
+    }
+
+    @PostMapping("/{id}/projects/{projectId}")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
+    public ResponseEntity<TeamResponse> addProject(
+            @PathVariable Integer id,
+            @PathVariable Integer projectId
+    ) {
+        return ResponseEntity.ok(teamService.addProject(id, projectId));
+    }
+
+    @DeleteMapping("/{id}/projects/{projectId}")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
+    public ResponseEntity<TeamResponse> removeProject(
+            @PathVariable Integer id,
+            @PathVariable Integer projectId
+    ) {
+        return ResponseEntity.ok(teamService.removeProject(id, projectId));
+    }
+
+    @PutMapping("/{id}/projects/{projectId}/members")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
+    public ResponseEntity<TeamResponse> updateProjectMembers(
+            @PathVariable Integer id,
+            @PathVariable Integer projectId,
+            @RequestBody UpdateProjectMembersRequest request
+    ) {
+        return ResponseEntity.ok(teamService.updateProjectMembers(id, projectId, request.getMemberIds()));
     }
 
     @DeleteMapping("/{id}")
