@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -375,7 +376,14 @@ public class ReportService {
         hours.setAdmin_hours(request.getAdminHours());
         hours.setReview_hours(request.getReviewHours());
         hours.setOther_hours(request.getOtherHours());
-        hours.setTotal_hours(request.getTotalHours());
+
+        // Compute total server-side so it is always accurate regardless of client payload
+        BigDecimal total = java.util.stream.Stream.of(
+                request.getMeetingHours(), request.getDeepWorkHours(),
+                request.getAdminHours(), request.getReviewHours(), request.getOtherHours())
+                .filter(v -> v != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        hours.setTotal_hours(total);
         hoursRepository.save(hours);
     }
 
@@ -450,6 +458,9 @@ public class ReportService {
                 .currentVersion(r.getCurrentVersion())
                 .submittedAt(r.getSubmittedAt())
                 .createdDate(r.getCreatedDate())
+                .totalHours(r.getHoursBreakdown() != null && r.getHoursBreakdown().getTotal_hours() != null
+                        ? r.getHoursBreakdown().getTotal_hours().doubleValue() : null)
+                .taskCount(r.getTasks() != null ? r.getTasks().size() : 0)
                 .build();
     }
 

@@ -4,6 +4,7 @@ import com.example.backend.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
 @Getter
 @Setter
@@ -26,6 +27,7 @@ public class ReportVersion extends BaseEntity {
     @JoinColumn(name = "report_id", nullable = false)
     private WeeklyReport report;
 
+    @Builder.Default
     @Column(nullable = false)
     private Integer versionNumber = 1;
 

@@ -11,6 +11,7 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 import ActivateAccountPage from '@/pages/auth/ActivateAccountPage'
 import PersonalDashboard from '@/pages/dashboard/PersonalDashboard'
 import TeamDashboard from '@/pages/dashboard/TeamDashboard'
+import TeamInsightsPage from '@/pages/dashboard/TeamInsightsPage'
 import MyReportsPage from '@/pages/reports/MyReportsPage'
 import NewReportPage from '@/pages/reports/NewReportPage'
 import ReportEditPage from '@/pages/reports/ReportEditPage'
@@ -42,6 +43,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute roles={['MANAGER', 'ADMIN']}>
               <TeamDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/team/insights"
+          element={
+            <ProtectedRoute roles={['MANAGER', 'ADMIN']}>
+              <TeamInsightsPage />
             </ProtectedRoute>
           }
         />

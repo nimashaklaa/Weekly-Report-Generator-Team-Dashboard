@@ -28,4 +28,7 @@ public class WeeklyReportSummaryResponse {
     private Integer currentVersion;
     private LocalDateTime submittedAt;
     private LocalDateTime createdDate;
+
+    private Double totalHours;
+    private Integer taskCount;
 }

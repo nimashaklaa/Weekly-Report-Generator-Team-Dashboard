@@ -257,20 +257,36 @@ export default function ReportDetailPage() {
         <Card>
           <CardHeader><CardTitle>Hours Breakdown</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-              {Object.entries(report.hoursBreakdown)
-                .filter(([key]) => key !== 'totalHours')
-                .map(([key, val]) => (
-                  <div key={key}>
-                    <p className="text-muted-foreground capitalize">{key.replace('Hours', '').replace(/([A-Z])/g, ' $1').trim()}</p>
-                    <p className="font-medium">{val}h</p>
+            {(() => {
+              const HOUR_LABELS: Record<string, string> = {
+                meetingHours:  'Meetings',
+                deepWorkHours: 'Deep Work',
+                adminHours:    'Admin',
+                reviewHours:   'Review',
+                otherHours:    'Other',
+              }
+              const hb = report.hoursBreakdown!
+              const rows = Object.entries(HOUR_LABELS).map(([key, label]) => ({
+                label,
+                value: (hb as Record<string, number | null>)[key] ?? 0,
+              }))
+              const computedTotal = rows.reduce((s, r) => s + (r.value ?? 0), 0)
+              const total = hb.totalHours ?? computedTotal
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                  {rows.map(({ label, value }) => (
+                    <div key={label}>
+                      <p className="text-muted-foreground">{label}</p>
+                      <p className="font-medium">{value}h</p>
+                    </div>
+                  ))}
+                  <div>
+                    <p className="text-muted-foreground">Total</p>
+                    <p className="font-semibold">{total}h</p>
                   </div>
-                ))}
-              <div>
-                <p className="text-muted-foreground">Total</p>
-                <p className="font-semibold">{report.hoursBreakdown.totalHours}h</p>
-              </div>
-            </div>
+                </div>
+              )
+            })()}
           </CardContent>
         </Card>
       )}
