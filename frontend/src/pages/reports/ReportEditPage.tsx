@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 const MOODS = [
   { value: 'GREAT', label: '😄 Great' },
@@ -86,7 +87,6 @@ export default function ReportEditPage() {
   const [report, setReport] = useState<WeeklyReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
   const [projects, setProjects] = useState<Project[]>([])
   const [categories, setCategories] = useState<Category[]>([])
 
@@ -155,11 +155,14 @@ export default function ReportEditPage() {
     if (!report) return
     const validTasks = tasks.filter((t) => t.title.trim())
     if (validTasks.length === 0) {
-      setError('Add at least one task with a title before saving.')
+      toast.add({
+        title: 'Tasks required',
+        description: 'Add at least one task with a title before saving.',
+        type: 'error',
+      })
       return
     }
     setSaving(true)
-    setError('')
     try {
       await reportsApi.update(reportId, {
         teamId: report.teamId!,
@@ -188,10 +191,11 @@ export default function ReportEditPage() {
           otherHours: parseFloat(hours.otherHours) || 0,
         },
       })
+      toast.add({ title: 'Report saved', type: 'success' })
       navigate(`/reports/${reportId}`)
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
-      setError(msg ?? 'Failed to save report')
+      toast.add({ title: 'Failed to save', description: msg ?? 'Please try again.', type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -488,8 +492,6 @@ export default function ReportEditPage() {
           </div>
         </CardContent>
       </Card>
-
-      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-3">
         <Button onClick={handleSave} disabled={saving} className="flex-1">

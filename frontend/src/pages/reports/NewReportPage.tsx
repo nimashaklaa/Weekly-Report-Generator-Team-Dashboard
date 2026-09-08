@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeft, CalendarDays } from 'lucide-react'
+import { toast } from '@/components/ui/toast'
 
 function toInputDate(d: Date) {
   return d.toISOString().slice(0, 10)
@@ -23,7 +24,6 @@ export default function NewReportPage() {
   const [teamId, setTeamId] = useState('')
   const [pickedDate, setPickedDate] = useState(toInputDate(new Date()))
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
 
   const selectedDate = new Date(pickedDate + 'T12:00:00')
   const weekNumber = getISOWeek(selectedDate)
@@ -45,9 +45,11 @@ export default function NewReportPage() {
   }, [currentUser])
 
   const handleCreate = async () => {
-    if (!teamId) { setError('Please select a team'); return }
+    if (!teamId) {
+      toast.add({ title: 'Team required', description: 'Please select a team to continue.', type: 'error' })
+      return
+    }
     setSubmitting(true)
-    setError('')
     try {
       const report = await reportsApi.create({ teamId: Number(teamId), weekYear, weekNumber })
       navigate(`/reports/${report.id}`)
@@ -56,10 +58,14 @@ export default function NewReportPage() {
       if (status === 409) {
         const existing = await reportsApi.getMyReports()
         const match = existing.find((r) => r.weekNumber === weekNumber && r.weekYear === weekYear)
-        if (match) { navigate(`/reports/${match.id}`); return }
+        if (match) {
+          toast.add({ title: 'Report already exists', description: 'Opening your existing report for this week.', type: 'info' })
+          navigate(`/reports/${match.id}`)
+          return
+        }
       }
       const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
-      setError(msg ?? 'Failed to create report')
+      toast.add({ title: 'Failed to create report', description: msg ?? 'Please try again.', type: 'error' })
       setSubmitting(false)
     }
   }
@@ -84,7 +90,9 @@ export default function NewReportPage() {
             <Label>Team</Label>
             <Select value={teamId} onValueChange={(v) => setTeamId(v ?? '')}>
               <SelectTrigger>
-                <SelectValue placeholder="Select your team" />
+                <SelectValue placeholder="Select your team">
+                  {teamId ? teams.find((t) => String(t.id) === teamId)?.name : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {teams.map((t) => (
@@ -110,8 +118,6 @@ export default function NewReportPage() {
               <p className="text-xs text-muted-foreground">{weekStart} – {weekEnd}</p>
             </div>
           </div>
-
-          {error && <p className="text-sm text-destructive">{error}</p>}
 
           <Button className="w-full" onClick={handleCreate} disabled={submitting || !teamId}>
             {submitting ? 'Creating…' : 'Create Report'}

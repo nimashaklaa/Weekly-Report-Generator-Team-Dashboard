@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import StatusBadge from '@/components/shared/StatusBadge'
+import { toast } from '@/components/ui/toast'
 
 export default function ReportDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -41,10 +42,23 @@ export default function ReportDetailPage() {
 
   const handleSubmit = async () => {
     if (!report) return
+    const filledTasks = report.tasks?.filter((t) => t.title?.trim())
+    if (!filledTasks || filledTasks.length === 0) {
+      toast.add({
+        title: 'Report is incomplete',
+        description: 'Add at least one task with a title before submitting for review.',
+        type: 'error',
+      })
+      return
+    }
     setSubmitting(true)
     try {
       const updated = await reportsApi.submit(reportId)
       setReport(updated)
+      toast.add({ title: 'Submitted for review', type: 'success' })
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      toast.add({ title: 'Failed to submit', description: msg ?? 'Please try again.', type: 'error' })
     } finally { setSubmitting(false) }
   }
 
@@ -54,11 +68,18 @@ export default function ReportDetailPage() {
     try {
       const updated = await reportsApi.approve(reportId)
       setReport(updated)
+      toast.add({ title: 'Report approved', type: 'success' })
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      toast.add({ title: 'Failed to approve', description: msg ?? 'Please try again.', type: 'error' })
     } finally { setSubmitting(false) }
   }
 
   const handleRequestCorrection = async () => {
-    if (!correctionComment.trim()) return
+    if (!correctionComment.trim()) {
+      toast.add({ title: 'Comment required', description: 'Describe what needs to be corrected.', type: 'warning' })
+      return
+    }
     setSubmitting(true)
     try {
       const updated = await reportsApi.requestCorrection(reportId, correctionComment)
@@ -67,6 +88,10 @@ export default function ReportDetailPage() {
       setCorrectionComment('')
       const updatedComments = await reportsApi.getComments(reportId)
       setComments(updatedComments)
+      toast.add({ title: 'Correction requested', type: 'success' })
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      toast.add({ title: 'Failed to send correction', description: msg ?? 'Please try again.', type: 'error' })
     } finally { setSubmitting(false) }
   }
 
@@ -77,6 +102,10 @@ export default function ReportDetailPage() {
       const newComment = await reportsApi.addComment(reportId, comment)
       setComments((prev) => [...prev, newComment])
       setComment('')
+      toast.add({ title: 'Comment posted', type: 'success' })
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      toast.add({ title: 'Failed to post comment', description: msg ?? 'Please try again.', type: 'error' })
     } finally { setSubmitting(false) }
   }
 

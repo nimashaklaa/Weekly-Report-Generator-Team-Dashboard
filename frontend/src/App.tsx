@@ -5,6 +5,7 @@ import { fetchMe } from '@/store/slices/authSlice'
 import AppLayout from '@/components/layout/AppLayout'
 import ProtectedRoute from '@/components/shared/ProtectedRoute'
 
+import { Toaster } from '@/components/ui/toast'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import ActivateAccountPage from '@/pages/auth/ActivateAccountPage'
@@ -82,8 +83,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <Toaster>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </Toaster>
   )
 }
