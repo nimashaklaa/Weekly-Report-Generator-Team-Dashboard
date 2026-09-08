@@ -109,9 +109,10 @@ public class ReportService {
 
         if (request.getHoursBreakdown() != null) {
             if (report.getHoursBreakdown() != null) {
-                hoursRepository.delete(report.getHoursBreakdown());
+                updateHoursBreakdown(report.getHoursBreakdown(), request.getHoursBreakdown());
+            } else {
+                saveHoursBreakdown(report, request.getHoursBreakdown());
             }
-            saveHoursBreakdown(report, request.getHoursBreakdown());
         }
 
         return toResponse(reportRepository.save(report));
@@ -391,6 +392,22 @@ public class ReportService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         hours.setTotal_hours(total);
         hoursRepository.save(hours);
+    }
+
+    private void updateHoursBreakdown(ReportHoursBreakdown existing, HoursBreakdownRequest request) {
+        existing.setMeeting_hours(request.getMeetingHours());
+        existing.setDeep_work_hours(request.getDeepWorkHours());
+        existing.setAdmin_hours(request.getAdminHours());
+        existing.setReview_hours(request.getReviewHours());
+        existing.setOther_hours(request.getOtherHours());
+
+        BigDecimal total = java.util.stream.Stream.of(
+                request.getMeetingHours(), request.getDeepWorkHours(),
+                request.getAdminHours(), request.getReviewHours(), request.getOtherHours())
+                .filter(v -> v != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        existing.setTotal_hours(total);
+        hoursRepository.save(existing);
     }
 
     @SneakyThrows

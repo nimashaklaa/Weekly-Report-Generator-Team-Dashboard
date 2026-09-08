@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle, AlertCircle, MessageSquare, History, ChevronDown, ChevronRight } from 'lucide-react'
+import { ArrowLeft, CheckCircle, AlertCircle, MessageSquare, History, ChevronDown, ChevronRight, Star, TriangleAlert } from 'lucide-react'
 import { format } from 'date-fns'
 import { reportsApi } from '@/api/reports'
 import type { WeeklyReport, ReportComment, ReportVersion } from '@/types'
@@ -219,7 +219,7 @@ export default function ReportDetailPage() {
         <CardContent className="space-y-4">
           {report.keyAchievement?.trim() && (
             <div className="flex gap-3 p-3 rounded-lg border bg-muted/40">
-              <span className="text-base shrink-0">⭐</span>
+              <Star className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">Key Achievement</p>
                 <p className="text-sm font-medium">{report.keyAchievement.trim()}</p>
@@ -241,7 +241,7 @@ export default function ReportDetailPage() {
         <CardContent className="space-y-4">
           {report.keyIssue?.trim() && (
             <div className="flex gap-3 p-3 rounded-lg border border-destructive/20 bg-destructive/5">
-              <span className="text-base shrink-0">🚨</span>
+              <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
               <div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">Key Issue</p>
                 <p className="text-sm font-medium">{report.keyIssue.trim()}</p>
@@ -389,7 +389,7 @@ export default function ReportDetailPage() {
                       <div className="space-y-3">
                         {snapshot.keyAchievement?.trim() && (
                           <div className="flex gap-3 p-3 rounded-lg border bg-muted/40">
-                            <span className="text-base shrink-0">⭐</span>
+                            <Star className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
                             <div>
                               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">Key Achievement</p>
                               <p className="text-sm font-medium">{snapshot.keyAchievement.trim()}</p>
