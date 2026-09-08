@@ -126,9 +126,7 @@ export default function TeamInsightsPage() {
     ? +(hoursReports.reduce((s, r) => s + (r.totalHours ?? 0), 0) / hoursReports.length).toFixed(1)
     : null
 
-  const loading = loadingTeams || loadingReports
-
-  if (loadingTeams) return (
+  if (loadingTeams || loadingReports) return (
     <div className="p-4 sm:p-6 space-y-6">
       <Skeleton className="h-8 w-48" />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

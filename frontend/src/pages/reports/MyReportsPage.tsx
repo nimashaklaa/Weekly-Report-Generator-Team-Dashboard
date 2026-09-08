@@ -117,7 +117,6 @@ function ReportCard({
   onDelete: (e: React.MouseEvent) => void
   deleting: boolean
 }) {
-  const date = report.submittedAt ?? report.createdDate
   const dateLabel = report.submittedAt
     ? `Submitted ${format(new Date(report.submittedAt), 'MMM d')}`
     : report.createdDate

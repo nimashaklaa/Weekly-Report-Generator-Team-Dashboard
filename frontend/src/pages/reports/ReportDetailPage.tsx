@@ -306,7 +306,7 @@ export default function ReportDetailPage() {
               const hb = report.hoursBreakdown!
               const rows = Object.entries(HOUR_LABELS).map(([key, label]) => ({
                 label,
-                value: (hb as Record<string, number | null>)[key] ?? 0,
+                value: (hb as unknown as Record<string, number | null>)[key] ?? 0,
               }))
               const computedTotal = rows.reduce((s, r) => s + (r.value ?? 0), 0)
               const total = hb.totalHours ?? computedTotal

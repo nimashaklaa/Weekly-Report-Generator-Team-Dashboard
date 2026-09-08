@@ -60,6 +60,7 @@ export interface ReportComment {
 export interface ReportVersion {
   id: number
   versionNumber: number
+  snapshotJson?: string
   createdDate: string
 }
 
