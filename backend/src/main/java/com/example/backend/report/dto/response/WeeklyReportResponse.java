@@ -29,7 +29,10 @@ public class WeeklyReportResponse {
     private ReportStatus status;
     private String weekSummary;
     private MoodType overallMood;
+    private String achievements;
+    private String keyAchievement;
     private String blockers;
+    private String keyIssue;
     private String nextWeekPlan;
     private String generalNotes;
 

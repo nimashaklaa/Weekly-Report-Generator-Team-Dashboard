@@ -23,7 +23,10 @@ export interface UpdateReportPayload {
   weekNumber: number
   weekSummary?: string
   overallMood?: string
+  achievements?: string
+  keyAchievement?: string
   blockers?: string
+  keyIssue?: string
   nextWeekPlan?: string
   generalNotes?: string
   tasks?: Array<{

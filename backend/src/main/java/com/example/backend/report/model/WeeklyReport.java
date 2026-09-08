@@ -64,7 +64,16 @@ public class WeeklyReport extends BaseEntity {
     private MoodType overallMood;
 
     @Column(columnDefinition = "TEXT")
+    private String achievements;
+
+    @Column(length = 500)
+    private String keyAchievement;
+
+    @Column(columnDefinition = "TEXT")
     private String blockers;
+
+    @Column(length = 500)
+    private String keyIssue;
 
     @Column(columnDefinition = "TEXT")
     private String nextWeekPlan;

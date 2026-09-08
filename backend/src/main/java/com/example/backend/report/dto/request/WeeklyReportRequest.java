@@ -30,7 +30,13 @@ public class WeeklyReportRequest {
 
     private MoodType overallMood;
 
+    private String achievements;
+
+    private String keyAchievement;
+
     private String blockers;
+
+    private String keyIssue;
 
     private String nextWeekPlan;
 

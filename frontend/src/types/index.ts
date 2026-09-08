@@ -76,7 +76,10 @@ export interface WeeklyReport {
   status: ReportStatus
   weekSummary?: string
   overallMood?: MoodType
+  achievements?: string
+  keyAchievement?: string
   blockers?: string
+  keyIssue?: string
   nextWeekPlan?: string
   generalNotes?: string
   currentVersion: number

@@ -65,7 +65,10 @@ public class ReportService {
                 .status(ReportStatus.DRAFT)
                 .weekSummary(request.getWeekSummary())
                 .overallMood(request.getOverallMood())
+                .achievements(request.getAchievements())
+                .keyAchievement(request.getKeyAchievement())
                 .blockers(request.getBlockers())
+                .keyIssue(request.getKeyIssue())
                 .nextWeekPlan(request.getNextWeekPlan())
                 .generalNotes(request.getGeneralNotes())
                 .currentVersion(1)
@@ -91,7 +94,10 @@ public class ReportService {
 
         report.setWeekSummary(request.getWeekSummary());
         report.setOverallMood(request.getOverallMood());
+        report.setAchievements(request.getAchievements());
+        report.setKeyAchievement(request.getKeyAchievement());
         report.setBlockers(request.getBlockers());
+        report.setKeyIssue(request.getKeyIssue());
         report.setNextWeekPlan(request.getNextWeekPlan());
         report.setGeneralNotes(request.getGeneralNotes());
 
@@ -426,7 +432,10 @@ public class ReportService {
                 .status(r.getStatus())
                 .weekSummary(r.getWeekSummary())
                 .overallMood(r.getOverallMood())
+                .achievements(r.getAchievements())
+                .keyAchievement(r.getKeyAchievement())
                 .blockers(r.getBlockers())
+                .keyIssue(r.getKeyIssue())
                 .nextWeekPlan(r.getNextWeekPlan())
                 .generalNotes(r.getGeneralNotes())
                 .currentVersion(r.getCurrentVersion())

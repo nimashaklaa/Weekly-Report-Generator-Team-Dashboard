@@ -92,7 +92,10 @@ export default function ReportEditPage() {
 
   const [weekSummary, setWeekSummary] = useState('')
   const [mood, setMood] = useState('')
+  const [achievements, setAchievements] = useState('')
+  const [keyAchievement, setKeyAchievement] = useState('')
   const [blockers, setBlockers] = useState('')
+  const [keyIssue, setKeyIssue] = useState('')
   const [nextWeekPlan, setNextWeekPlan] = useState('')
   const [generalNotes, setGeneralNotes] = useState('')
   const [tasks, setTasks] = useState<TaskRow[]>([newTask()])
@@ -114,7 +117,10 @@ export default function ReportEditPage() {
       setReport(r)
       setWeekSummary(r.weekSummary ?? '')
       setMood(r.overallMood ?? '')
+      setAchievements(r.achievements ?? '')
+      setKeyAchievement(r.keyAchievement ?? '')
       setBlockers(r.blockers ?? '')
+      setKeyIssue(r.keyIssue ?? '')
       setNextWeekPlan(r.nextWeekPlan ?? '')
       setGeneralNotes(r.generalNotes ?? '')
       if (r.tasks?.length > 0) {
@@ -170,7 +176,10 @@ export default function ReportEditPage() {
         weekNumber: report.weekNumber,
         weekSummary: weekSummary.trim() || undefined,
         overallMood: mood || undefined,
+        achievements: achievements.trim() || undefined,
+        keyAchievement: keyAchievement.trim() || undefined,
         blockers: blockers.trim() || undefined,
+        keyIssue: keyIssue.trim() || undefined,
         nextWeekPlan: nextWeekPlan.trim() || undefined,
         generalNotes: generalNotes.trim() || undefined,
         tasks: validTasks.map((t, i) => ({
@@ -233,8 +242,8 @@ export default function ReportEditPage() {
           <div className="space-y-2">
             <Label>Week Summary</Label>
             <Textarea
-              placeholder="What did you accomplish this week? Key highlights, achievements…"
-              rows={4}
+              placeholder="Brief overview of your week…"
+              rows={3}
               value={weekSummary}
               onChange={(e) => setWeekSummary(e.target.value)}
             />
@@ -251,6 +260,33 @@ export default function ReportEditPage() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Achievements */}
+      <Card>
+        <CardHeader><CardTitle>Achievements</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Achievements / Highlights</Label>
+            <Textarea
+              placeholder="List what you achieved or delivered this week…"
+              rows={3}
+              value={achievements}
+              onChange={(e) => setAchievements(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              Key Achievement
+              <span className="text-xs font-normal text-muted-foreground">(flag one as the highlight)</span>
+            </Label>
+            <Input
+              placeholder="The single most important achievement this week…"
+              value={keyAchievement}
+              onChange={(e) => setKeyAchievement(e.target.value)}
+            />
           </div>
         </CardContent>
       </Card>
@@ -470,6 +506,17 @@ export default function ReportEditPage() {
               rows={2}
               value={blockers}
               onChange={(e) => setBlockers(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              Key Issue
+              <span className="text-xs font-normal text-muted-foreground">(flag one as the key blocker)</span>
+            </Label>
+            <Input
+              placeholder="The single most critical blocker this week…"
+              value={keyIssue}
+              onChange={(e) => setKeyIssue(e.target.value)}
             />
           </div>
           <div className="space-y-2">

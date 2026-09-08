@@ -98,12 +98,12 @@ export default function TeamInsightsPage() {
   )
 
   // Per-member summary
-  const memberMap: Record<string, { name: string; reports: WeeklyReportSummary[] }> = {}
+  const memberMap: Record<string, { authorId: number; name: string; reports: WeeklyReportSummary[] }> = {}
   reports.forEach((r) => {
-    if (!memberMap[r.authorId]) memberMap[r.authorId] = { name: r.authorName, reports: [] }
+    if (!memberMap[r.authorId]) memberMap[r.authorId] = { authorId: r.authorId, name: r.authorName, reports: [] }
     memberMap[r.authorId].reports.push(r)
   })
-  const members = Object.values(memberMap).map(({ name, reports: mrs }) => {
+  const members = Object.values(memberMap).map(({ authorId, name, reports: mrs }) => {
     const sorted = [...mrs].sort(
       (a, b) => (b.weekYear * 100 + b.weekNumber) - (a.weekYear * 100 + a.weekNumber)
     )
@@ -114,7 +114,7 @@ export default function TeamInsightsPage() {
     const moodCounts: Record<string, number> = {}
     mrs.forEach((r) => { if (r.overallMood) moodCounts[r.overallMood] = (moodCounts[r.overallMood] || 0) + 1 })
     const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
-    return { name, count: mrs.length, avgHours, lastReport, topMood }
+    return { authorId, name, count: mrs.length, avgHours, lastReport, topMood }
   }).sort((a, b) => b.count - a.count)
 
   // Overall KPIs
@@ -319,11 +319,11 @@ export default function TeamInsightsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {members.map(({ name, count, avgHours, lastReport, topMood }) => (
+                    {members.map(({ authorId, name, count, avgHours, lastReport, topMood }) => (
                       <tr
                         key={name}
                         className="border-b last:border-0 hover:bg-muted/40 cursor-pointer transition-colors"
-                        onClick={() => navigate(`/reports/${lastReport.id}`)}
+                        onClick={() => navigate(`/members/${authorId}`)}
                       >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
@@ -384,9 +384,12 @@ export default function TeamInsightsPage() {
                         <tr
                           key={r.id}
                           className="border-b last:border-0 hover:bg-muted/40 cursor-pointer transition-colors"
-                          onClick={() => navigate(`/reports/${r.id}`)}
+                          onClick={() => navigate(r.status === 'SUBMITTED' ? `/reports/${r.id}/review` : `/reports/${r.id}`)}
                         >
-                          <td className="px-4 py-2.5 font-medium">{r.authorName}</td>
+                          <td
+                            className="px-4 py-2.5 font-medium hover:underline"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/members/${r.authorId}`) }}
+                          >{r.authorName}</td>
                           <td className="px-4 py-2.5 text-muted-foreground">W{r.weekNumber}/{r.weekYear}</td>
                           <td className="px-4 py-2.5 text-muted-foreground hidden sm:table-cell">
                             {r.totalHours != null ? `${r.totalHours}h` : '—'}

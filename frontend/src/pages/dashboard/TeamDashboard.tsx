@@ -242,9 +242,12 @@ export default function TeamDashboard() {
                         <TableRow
                           key={r.id}
                           className="cursor-pointer"
-                          onClick={() => navigate(`/reports/${r.id}`)}
+                          onClick={() => navigate(r.status === 'SUBMITTED' ? `/reports/${r.id}/review` : `/reports/${r.id}`)}
                         >
-                          <TableCell className="font-medium">{r.authorName}</TableCell>
+                          <TableCell
+                            className="font-medium hover:underline"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/members/${r.authorId}`) }}
+                          >{r.authorName}</TableCell>
                           <TableCell className="text-muted-foreground text-sm">W{r.weekNumber}/{r.weekYear}</TableCell>
                           <TableCell><StatusBadge status={r.status} /></TableCell>
                           <TableCell className="text-sm">
