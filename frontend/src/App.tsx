@@ -6,6 +6,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import ProtectedRoute from '@/components/shared/ProtectedRoute'
 
 import { Toaster } from '@/components/ui/toast'
+import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import ActivateAccountPage from '@/pages/auth/ActivateAccountPage'
@@ -35,12 +36,12 @@ function AppRoutes() {
   return (
     <>
     <Routes>
+      <Route path="/" element={token ? <Navigate to="/dashboard" replace /> : <HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/activate-account" element={<ActivateAccountPage />} />
 
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<PersonalDashboard />} />
         <Route
           path="/dashboard/team"
@@ -105,7 +106,7 @@ function AppRoutes() {
         />
       </Route>
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to={token ? "/dashboard" : "/"} replace />} />
     </Routes>
     {token && <AiChatWidget />}
     </>
