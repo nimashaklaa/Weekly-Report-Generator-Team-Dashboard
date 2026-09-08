@@ -12,6 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { toast } from '@/components/ui/toast'
 
 const AVAILABLE_ROLES = ['TEAM_MEMBER', 'MANAGER', 'ADMIN']
 const PAGE_SIZE = 10
@@ -69,18 +70,22 @@ export default function UsersPage() {
       const updated = await usersApi.assignRoles(roleUser.id, [selectedRole])
       setUsers((prev) => prev.map((u) => u.id === updated.id ? updated : u))
       setRoleUser(null)
+      toast.add({ title: 'Role updated', type: 'success' })
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      toast.add({ title: 'Failed to assign role', description: msg ?? 'Please try again.', type: 'error' })
     } finally { setSaving(false) }
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-4">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-4">
       <div>
         <h1 className="text-2xl font-bold">User Management</h1>
         <p className="text-muted-foreground text-sm">Manage user roles and account status</p>
       </div>
 
       {/* Search + filter bar */}
-      <div className="flex gap-3 items-center">
+      <div className="flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -129,6 +134,7 @@ export default function UsersPage() {
             </div>
           ) : (
             <>
+              <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -152,7 +158,7 @@ export default function UsersPage() {
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>
                       <TableCell>
                         <div className="flex gap-1 flex-wrap">
-                          {user.roles.map((r) => <Badge key={r} variant="outline" className="text-xs">{r}</Badge>)}
+                          {[...new Set(user.roles)].map((r) => <Badge key={r} variant="outline" className="text-xs">{r}</Badge>)}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -168,7 +174,7 @@ export default function UsersPage() {
                             variant="ghost"
                             size="icon"
                             title="Assign role"
-                            onClick={() => { setRoleUser(user); setSelectedRole(user.roles[0] ?? '') }}
+                            onClick={() => { setRoleUser(user); setSelectedRole('') }}
                           >
                             <Shield className="h-4 w-4" />
                           </Button>
@@ -188,6 +194,7 @@ export default function UsersPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -237,7 +244,11 @@ export default function UsersPage() {
             <DialogTitle>Assign Role — {roleUser?.firstName} {roleUser?.lastName}</DialogTitle>
           </DialogHeader>
           <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v ?? '')}>
-            <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a role to assign">
+                {selectedRole || undefined}
+              </SelectValue>
+            </SelectTrigger>
             <SelectContent>
               {AVAILABLE_ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
             </SelectContent>

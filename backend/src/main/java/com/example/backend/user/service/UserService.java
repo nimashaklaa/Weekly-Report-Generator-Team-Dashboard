@@ -5,6 +5,7 @@ import com.example.backend.department.repository.DepartmentRepository;
 import com.example.backend.department.repository.JobTitleRepository;
 import com.example.backend.role.Role;
 import com.example.backend.role.RoleRepository;
+import java.util.ArrayList;
 import com.example.backend.user.User;
 import com.example.backend.user.dto.AssignRolesRequest;
 import com.example.backend.user.dto.UpdateUserRequest;
@@ -81,10 +82,10 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        List<Role> roles = request.getRoles().stream()
+        List<Role> roles = new ArrayList<>(request.getRoles().stream()
                 .map(roleName -> roleRepository.findByName(roleName)
                         .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleName)))
-                .toList();
+                .toList());
 
         user.setRoles(roles);
         return UserResponse.from(userRepository.save(user));

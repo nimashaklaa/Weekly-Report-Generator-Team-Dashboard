@@ -123,7 +123,7 @@ export default function TeamsPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-4">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Teams</h1>
@@ -142,6 +142,7 @@ export default function TeamsPage() {
               {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
           ) : (
+            <div className="overflow-x-auto -mx-6 px-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -194,6 +195,7 @@ export default function TeamsPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

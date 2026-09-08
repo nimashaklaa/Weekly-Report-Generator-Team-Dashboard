@@ -13,24 +13,24 @@ import {
 import { toast } from '@/components/ui/toast'
 
 const STATUS_COLOR: Record<ReportStatus, string> = {
-  DRAFT: 'bg-slate-300',
-  SUBMITTED: 'bg-blue-500',
-  NEEDS_CORRECTION: 'bg-red-500',
-  APPROVED: 'bg-emerald-500',
+  DRAFT:            'bg-slate-500',
+  SUBMITTED:        'bg-blue-600',
+  NEEDS_CORRECTION: 'bg-amber-600',
+  APPROVED:         'bg-green-600',
 }
 
 const STATUS_LABEL: Record<ReportStatus, string> = {
-  DRAFT: 'Draft',
-  SUBMITTED: 'Submitted',
+  DRAFT:            'Draft',
+  SUBMITTED:        'Submitted',
   NEEDS_CORRECTION: 'Needs Correction',
-  APPROVED: 'Approved',
+  APPROVED:         'Approved',
 }
 
 const STATUS_TEXT: Record<ReportStatus, string> = {
-  DRAFT: 'text-slate-500',
-  SUBMITTED: 'text-blue-600',
-  NEEDS_CORRECTION: 'text-red-600',
-  APPROVED: 'text-emerald-600',
+  DRAFT:            'text-slate-500',
+  SUBMITTED:        'text-blue-600',
+  NEEDS_CORRECTION: 'text-amber-600',
+  APPROVED:         'text-green-600',
 }
 
 const MOOD_EMOJI: Record<string, string> = {
@@ -188,7 +188,7 @@ export default function MyReportsPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>

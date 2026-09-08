@@ -168,11 +168,11 @@ export default function ReportEditPage() {
         teamId: report.teamId!,
         weekYear: report.weekYear,
         weekNumber: report.weekNumber,
-        weekSummary: weekSummary || undefined,
+        weekSummary: weekSummary.trim() || undefined,
         overallMood: mood || undefined,
-        blockers: blockers || undefined,
-        nextWeekPlan: nextWeekPlan || undefined,
-        generalNotes: generalNotes || undefined,
+        blockers: blockers.trim() || undefined,
+        nextWeekPlan: nextWeekPlan.trim() || undefined,
+        generalNotes: generalNotes.trim() || undefined,
         tasks: validTasks.map((t, i) => ({
           title: t.title.trim(),
           description: t.description || undefined,
@@ -202,7 +202,7 @@ export default function ReportEditPage() {
   }
 
   if (loading) return (
-    <div className="p-6 max-w-3xl mx-auto space-y-4">
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-4">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-40 w-full" />
       <Skeleton className="h-60 w-full" />
@@ -212,7 +212,7 @@ export default function ReportEditPage() {
   if (!report) return <div className="p-6 text-center text-muted-foreground">Report not found</div>
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(`/reports/${reportId}`)}>

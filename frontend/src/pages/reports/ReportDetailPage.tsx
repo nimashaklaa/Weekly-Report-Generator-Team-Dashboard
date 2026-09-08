@@ -13,6 +13,14 @@ import { Separator } from '@/components/ui/separator'
 import StatusBadge from '@/components/shared/StatusBadge'
 import { toast } from '@/components/ui/toast'
 
+const MOOD_LABELS: Record<string, string> = {
+  GREAT:      '😄 Great',
+  GOOD:       '🙂 Good',
+  NEUTRAL:    '😐 Neutral',
+  DIFFICULT:  '😟 Difficult',
+  BURNED_OUT: '😩 Burned out',
+}
+
 export default function ReportDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -110,7 +118,7 @@ export default function ReportDetailPage() {
   }
 
   if (loading) return (
-    <div className="p-6 max-w-4xl mx-auto space-y-4">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-4">
       <Skeleton className="h-8 w-48" />
       <Skeleton className="h-64 w-full" />
     </div>
@@ -119,7 +127,7 @@ export default function ReportDetailPage() {
   if (!report) return <div className="p-6 text-center text-muted-foreground">Report not found</div>
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
@@ -183,30 +191,36 @@ export default function ReportDetailPage() {
 
       {/* Summary */}
       <Card>
-        <CardHeader><CardTitle>Week Summary</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          {report.weekSummary && (
+        <CardHeader><CardTitle>Week Overview</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Summary</p>
+            {report.weekSummary?.trim()
+              ? <p className="text-sm whitespace-pre-wrap">{report.weekSummary.trim()}</p>
+              : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Mood</p>
+            {report.overallMood
+              ? <p className="text-sm">{MOOD_LABELS[report.overallMood] ?? report.overallMood}</p>
+              : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Blockers</p>
+            {report.blockers?.trim()
+              ? <p className="text-sm whitespace-pre-wrap">{report.blockers.trim()}</p>
+              : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Next Week Plan</p>
+            {report.nextWeekPlan?.trim()
+              ? <p className="text-sm whitespace-pre-wrap">{report.nextWeekPlan.trim()}</p>
+              : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+          </div>
+          {report.generalNotes?.trim() && (
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">Summary</p>
-              <p className="text-sm whitespace-pre-wrap">{report.weekSummary}</p>
-            </div>
-          )}
-          {report.overallMood && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">Mood</p>
-              <p className="text-sm">{report.overallMood}</p>
-            </div>
-          )}
-          {report.blockers && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">Blockers</p>
-              <p className="text-sm whitespace-pre-wrap">{report.blockers}</p>
-            </div>
-          )}
-          {report.nextWeekPlan && (
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">Next week plan</p>
-              <p className="text-sm whitespace-pre-wrap">{report.nextWeekPlan}</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">General Notes</p>
+              <p className="text-sm whitespace-pre-wrap">{report.generalNotes.trim()}</p>
             </div>
           )}
         </CardContent>
@@ -214,22 +228,23 @@ export default function ReportDetailPage() {
 
       {/* Tasks */}
       <Card>
-        <CardHeader><CardTitle>Tasks ({report.tasks?.length ?? 0})</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Tasks <span className="text-muted-foreground text-sm font-normal">({report.tasks?.length ?? 0})</span></CardTitle></CardHeader>
         <CardContent>
-          {report.tasks?.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks added</p>
+          {!report.tasks?.length ? (
+            <p className="text-sm text-muted-foreground italic">No tasks added</p>
           ) : (
-            <div className="space-y-3">
-              {report.tasks?.map((task) => (
-                <div key={task.id} className="border rounded-md p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-sm">{task.title}</p>
-                    <span className="text-xs text-muted-foreground">{task.hoursSpent}h</span>
+            <div className="space-y-2">
+              {report.tasks.map((task) => (
+                <div key={task.id} className="flex items-start justify-between gap-3 border rounded-md px-3 py-2.5">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{task.title}</p>
+                    <div className="flex flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
+                      <span>{task.status.replace(/_/g, ' ')}</span>
+                      {task.priority && <span>· {task.priority}</span>}
+                      {task.projectName && <span>· {task.projectName}</span>}
+                    </div>
                   </div>
-                  <div className="flex gap-2 text-xs text-muted-foreground">
-                    <span>{task.status}</span>
-                    {task.priority && <span>· {task.priority}</span>}
-                  </div>
+                  <span className="text-sm text-muted-foreground shrink-0">{task.hoursSpent}h</span>
                 </div>
               ))}
             </div>
@@ -242,7 +257,7 @@ export default function ReportDetailPage() {
         <Card>
           <CardHeader><CardTitle>Hours Breakdown</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
               {Object.entries(report.hoursBreakdown)
                 .filter(([key]) => key !== 'totalHours')
                 .map(([key, val]) => (

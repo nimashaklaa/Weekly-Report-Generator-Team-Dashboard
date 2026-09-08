@@ -101,6 +101,8 @@ export interface WeeklyReportSummary {
   authorName: string
   teamId?: number
   teamName?: string
+  totalHours?: number
+  taskCount?: number
 }
 
 // ─── Teams ────────────────────────────────────────────────────────────────────
