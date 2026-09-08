@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle, AlertCircle, MessageSquare } from 'lucide-react'
+import { ArrowLeft, CheckCircle, AlertCircle, MessageSquare, History, ChevronDown, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 import { reportsApi } from '@/api/reports'
-import type { WeeklyReport, ReportComment } from '@/types'
+import type { WeeklyReport, ReportComment, ReportVersion } from '@/types'
 import { useAppSelector } from '@/store/hooks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,6 +27,8 @@ export default function ReportDetailPage() {
   const user = useAppSelector((s) => s.auth.user)
   const [report, setReport] = useState<WeeklyReport | null>(null)
   const [comments, setComments] = useState<ReportComment[]>([])
+  const [versions, setVersions] = useState<ReportVersion[]>([])
+  const [expandedVersion, setExpandedVersion] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -41,12 +43,15 @@ export default function ReportDetailPage() {
   const canApprove = isManager && report?.status === 'SUBMITTED'
 
   useEffect(() => {
-    Promise.all([
+    const fetches: [Promise<WeeklyReport>, Promise<ReportComment[]>, Promise<ReportVersion[]>] = [
       reportsApi.getById(reportId),
       reportsApi.getComments(reportId),
-    ]).then(([r, c]) => { setReport(r); setComments(c) })
+      isManager ? reportsApi.getVersions(reportId) : Promise.resolve([]),
+    ]
+    Promise.all(fetches)
+      .then(([r, c, v]) => { setReport(r); setComments(c); setVersions(v) })
       .finally(() => setLoading(false))
-  }, [reportId])
+  }, [reportId, isManager])
 
   const handleSubmit = async () => {
     if (!report) return
@@ -325,6 +330,138 @@ export default function ReportDetailPage() {
                 </div>
               )
             })()}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Version History — visible to managers when the report has gone through corrections */}
+      {isManager && versions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <History className="h-4 w-4" />
+              Past Versions
+              <span className="text-muted-foreground font-normal">({versions.length})</span>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Snapshots saved each time the member resubmitted after a correction request.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2 pt-0">
+            {versions.map((v) => {
+              const isOpen = expandedVersion === v.id
+              let snapshot: WeeklyReport | null = null
+              try { snapshot = v.snapshotJson ? JSON.parse(v.snapshotJson) as WeeklyReport : null } catch { snapshot = null }
+              return (
+                <div key={v.id} className="border rounded-lg overflow-hidden">
+                  <button
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/40 transition-colors"
+                    onClick={() => setExpandedVersion(isOpen ? null : v.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium">Version {v.versionNumber}</span>
+                      <span className="text-xs text-muted-foreground">
+                        · saved {format(new Date(v.createdDate), 'MMM d, yyyy')}
+                      </span>
+                    </div>
+                    {isOpen
+                      ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                      : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+                  </button>
+
+                  {isOpen && snapshot && (
+                    <div className="border-t bg-muted/20 px-4 py-4 space-y-4">
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Summary</p>
+                          {snapshot.weekSummary?.trim()
+                            ? <p className="text-sm whitespace-pre-wrap">{snapshot.weekSummary.trim()}</p>
+                            : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Mood</p>
+                          {snapshot.overallMood
+                            ? <p className="text-sm">{MOOD_LABELS[snapshot.overallMood] ?? snapshot.overallMood}</p>
+                            : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+                        </div>
+                      </div>
+                      <Separator />
+                      <div className="space-y-3">
+                        {snapshot.keyAchievement?.trim() && (
+                          <div className="flex gap-3 p-3 rounded-lg border bg-muted/40">
+                            <span className="text-base shrink-0">⭐</span>
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">Key Achievement</p>
+                              <p className="text-sm font-medium">{snapshot.keyAchievement.trim()}</p>
+                            </div>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Achievements</p>
+                          {snapshot.achievements?.trim()
+                            ? <p className="text-sm whitespace-pre-wrap">{snapshot.achievements.trim()}</p>
+                            : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+                        </div>
+                      </div>
+                      <Separator />
+                      <div className="space-y-3">
+                        {snapshot.keyIssue?.trim() && (
+                          <div className="flex gap-3 p-3 rounded-lg border border-destructive/20 bg-destructive/5">
+                            <span className="text-base shrink-0">🚨</span>
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">Key Issue</p>
+                              <p className="text-sm font-medium">{snapshot.keyIssue.trim()}</p>
+                            </div>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Blockers</p>
+                          {snapshot.blockers?.trim()
+                            ? <p className="text-sm whitespace-pre-wrap">{snapshot.blockers.trim()}</p>
+                            : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Next Week Plan</p>
+                          {snapshot.nextWeekPlan?.trim()
+                            ? <p className="text-sm whitespace-pre-wrap">{snapshot.nextWeekPlan.trim()}</p>
+                            : <p className="text-sm text-muted-foreground italic">Not filled in</p>}
+                        </div>
+                      </div>
+                      {snapshot.tasks && snapshot.tasks.length > 0 && (
+                        <>
+                          <Separator />
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                              Tasks ({snapshot.tasks.length})
+                            </p>
+                            <div className="space-y-1.5">
+                              {snapshot.tasks.map((t, i) => (
+                                <div key={i} className="flex items-start justify-between gap-3 border rounded-md px-3 py-2 bg-background">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate">{t.title}</p>
+                                    <div className="flex flex-wrap gap-2 mt-0.5 text-xs text-muted-foreground">
+                                      <span>{t.status?.replace(/_/g, ' ')}</span>
+                                      {t.priority && <span>· {t.priority}</span>}
+                                    </div>
+                                  </div>
+                                  <span className="text-sm text-muted-foreground shrink-0">{t.hoursSpent}h</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {isOpen && !snapshot && (
+                    <div className="border-t px-4 py-3 bg-muted/20">
+                      <p className="text-sm text-muted-foreground italic">Snapshot data unavailable.</p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </CardContent>
         </Card>
       )}
