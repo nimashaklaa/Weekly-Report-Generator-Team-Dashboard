@@ -33,6 +33,7 @@ public class WeeklyReportResponse {
     private String keyAchievement;
     private String blockers;
     private String keyIssue;
+    private String keyBlocker;
     private String nextWeekPlan;
     private String generalNotes;
 

@@ -69,6 +69,7 @@ public class ReportService {
                 .keyAchievement(request.getKeyAchievement())
                 .blockers(request.getBlockers())
                 .keyIssue(request.getKeyIssue())
+                .keyBlocker(request.getKeyBlocker())
                 .nextWeekPlan(request.getNextWeekPlan())
                 .generalNotes(request.getGeneralNotes())
                 .currentVersion(1)
@@ -98,6 +99,7 @@ public class ReportService {
         report.setKeyAchievement(request.getKeyAchievement());
         report.setBlockers(request.getBlockers());
         report.setKeyIssue(request.getKeyIssue());
+        report.setKeyBlocker(request.getKeyBlocker());
         report.setNextWeekPlan(request.getNextWeekPlan());
         report.setGeneralNotes(request.getGeneralNotes());
 
@@ -453,6 +455,7 @@ public class ReportService {
                 .keyAchievement(r.getKeyAchievement())
                 .blockers(r.getBlockers())
                 .keyIssue(r.getKeyIssue())
+                .keyBlocker(r.getKeyBlocker())
                 .nextWeekPlan(r.getNextWeekPlan())
                 .generalNotes(r.getGeneralNotes())
                 .currentVersion(r.getCurrentVersion())

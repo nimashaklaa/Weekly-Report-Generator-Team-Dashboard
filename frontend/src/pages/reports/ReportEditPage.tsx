@@ -96,6 +96,7 @@ export default function ReportEditPage() {
   const [keyAchievement, setKeyAchievement] = useState('')
   const [blockers, setBlockers] = useState('')
   const [keyIssue, setKeyIssue] = useState('')
+  const [keyBlocker, setKeyBlocker] = useState('')
   const [nextWeekPlan, setNextWeekPlan] = useState('')
   const [generalNotes, setGeneralNotes] = useState('')
   const [tasks, setTasks] = useState<TaskRow[]>([newTask()])
@@ -121,6 +122,7 @@ export default function ReportEditPage() {
       setKeyAchievement(r.keyAchievement ?? '')
       setBlockers(r.blockers ?? '')
       setKeyIssue(r.keyIssue ?? '')
+      setKeyBlocker(r.keyBlocker ?? '')
       setNextWeekPlan(r.nextWeekPlan ?? '')
       setGeneralNotes(r.generalNotes ?? '')
       if (r.tasks?.length > 0) {
@@ -180,6 +182,7 @@ export default function ReportEditPage() {
         keyAchievement: keyAchievement.trim() || undefined,
         blockers: blockers.trim() || undefined,
         keyIssue: keyIssue.trim() || undefined,
+        keyBlocker: keyBlocker.trim() || undefined,
         nextWeekPlan: nextWeekPlan.trim() || undefined,
         generalNotes: generalNotes.trim() || undefined,
         tasks: validTasks.map((t, i) => ({
@@ -511,12 +514,23 @@ export default function ReportEditPage() {
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               Key Issue
-              <span className="text-xs font-normal text-muted-foreground">(flag one as the key blocker)</span>
+              <span className="text-xs font-normal text-muted-foreground">(flag one as the key issue)</span>
+            </Label>
+            <Input
+              placeholder="The single most critical issue this week…"
+              value={keyIssue}
+              onChange={(e) => setKeyIssue(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              Key Blocker
+              <span className="text-xs font-normal text-muted-foreground">(flag the most critical blocker)</span>
             </Label>
             <Input
               placeholder="The single most critical blocker this week…"
-              value={keyIssue}
-              onChange={(e) => setKeyIssue(e.target.value)}
+              value={keyBlocker}
+              onChange={(e) => setKeyBlocker(e.target.value)}
             />
           </div>
           <div className="space-y-2">

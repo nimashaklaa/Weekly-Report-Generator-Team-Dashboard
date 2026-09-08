@@ -1,4 +1,4 @@
-import type { DashboardSummary, TeamReportStats, UserStats } from '@/types'
+import type { ActivityItem, DashboardSummary, TeamReportStats, TeamTaskStats, UserStats } from '@/types'
 import api from './axios'
 
 export const dashboardApi = {
@@ -9,6 +9,12 @@ export const dashboardApi = {
     api.get<TeamReportStats>(`/dashboard/teams/${teamId}/reports`, {
       params: { weekYear, weekNumber },
     }).then((r) => r.data),
+
+  getTeamTaskStats: (teamId: number) =>
+    api.get<TeamTaskStats>(`/dashboard/teams/${teamId}/task-stats`).then((r) => r.data),
+
+  getTeamActivity: (teamId: number) =>
+    api.get<ActivityItem[]>(`/dashboard/teams/${teamId}/activity`).then((r) => r.data),
 
   getUserStats: (userId: number) =>
     api.get<UserStats>(`/dashboard/users/${userId}/stats`).then((r) => r.data),

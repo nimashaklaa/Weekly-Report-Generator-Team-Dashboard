@@ -81,6 +81,7 @@ export interface WeeklyReport {
   keyAchievement?: string
   blockers?: string
   keyIssue?: string
+  keyBlocker?: string
   nextWeekPlan?: string
   generalNotes?: string
   currentVersion: number
@@ -168,6 +169,22 @@ export interface DashboardSummary {
   currentWeekNumber: number
   reportsThisWeek: ReportStatusBreakdown
   pendingReviews: number
+  openBlockersCount: number
+}
+
+export interface TeamTaskStats {
+  byProject: Array<{ name: string; hours: number }>
+  byCategory: Array<{ name: string; hours: number }>
+}
+
+export interface ActivityItem {
+  reportId: number
+  authorName: string
+  reviewerName?: string
+  action: 'APPROVED' | 'NEEDS_CORRECTION'
+  weekYear: number
+  weekNumber: number
+  timestamp: string
 }
 
 export interface TeamReportStats {

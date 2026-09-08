@@ -5,6 +5,7 @@ import com.example.backend.report.enums.ReportStatus;
 import com.example.backend.report.model.WeeklyReport;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -54,6 +55,12 @@ public interface WeeklyReportRepository extends JpaRepository<WeeklyReport, Inte
 
     @Query("SELECT r.overallMood, COUNT(r) FROM WeeklyReport r WHERE r.author.id = :userId AND r.overallMood IS NOT NULL GROUP BY r.overallMood")
     List<Object[]> countMoodByAuthor(@Param("userId") Integer userId);
+
+    @Query("SELECT r FROM WeeklyReport r WHERE r.team.id = :teamId AND r.status IN :statuses AND r.reviewedAt IS NOT NULL ORDER BY r.reviewedAt DESC")
+    List<WeeklyReport> findRecentlyReviewedByTeam(
+            @Param("teamId") Integer teamId,
+            @Param("statuses") List<ReportStatus> statuses,
+            Pageable pageable);
 
     @Query("SELECT AVG(COALESCE(h.total_hours, " +
            "COALESCE(h.meeting_hours, 0) + COALESCE(h.deep_work_hours, 0) + " +

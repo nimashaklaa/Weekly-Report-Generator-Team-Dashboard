@@ -27,6 +27,7 @@ export interface UpdateReportPayload {
   keyAchievement?: string
   blockers?: string
   keyIssue?: string
+  keyBlocker?: string
   nextWeekPlan?: string
   generalNotes?: string
   tasks?: Array<{

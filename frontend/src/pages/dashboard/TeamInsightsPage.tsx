@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { teamsApi } from '@/api/teams'
 import { reportsApi } from '@/api/reports'
-import type { Team, WeeklyReportSummary } from '@/types'
+import { dashboardApi } from '@/api/dashboard'
+import type { Team, TeamTaskStats, WeeklyReportSummary } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -39,6 +40,7 @@ export default function TeamInsightsPage() {
   const [teams, setTeams] = useState<Team[]>([])
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
   const [reports, setReports] = useState<WeeklyReportSummary[]>([])
+  const [taskStats, setTaskStats] = useState<TeamTaskStats | null>(null)
   const [loadingTeams, setLoadingTeams] = useState(true)
   const [loadingReports, setLoadingReports] = useState(false)
 
@@ -55,12 +57,14 @@ export default function TeamInsightsPage() {
   useEffect(() => {
     if (!selectedTeamId) return
     setLoadingReports(true)
+    setTaskStats(null)
     Promise.all([
       reportsApi.getAll({ teamId: selectedTeamId, status: 'SUBMITTED', size: 300 }),
       reportsApi.getAll({ teamId: selectedTeamId, status: 'APPROVED',  size: 300 }),
     ]).then(([s, a]) => {
       setReports([...s.content, ...a.content])
     }).finally(() => setLoadingReports(false))
+    dashboardApi.getTeamTaskStats(selectedTeamId).then(setTaskStats).catch(() => {})
   }, [selectedTeamId])
 
   const team = teams.find((t) => t.id === selectedTeamId) ?? null
@@ -79,8 +83,9 @@ export default function TeamInsightsPage() {
 
   const submissionTrend = last12.map((k) => {
     const wrs = weekGroups[k]
-    const totalHours = wrs.reduce((s, r) => s + (r.totalHours ?? 0), 0)
-    const avgHours = wrs.length > 0 ? +(totalHours / wrs.length).toFixed(1) : 0
+    const withHours = wrs.filter((r) => r.totalHours != null && r.totalHours > 0)
+    const totalHours = withHours.reduce((s, r) => s + (r.totalHours ?? 0), 0)
+    const avgHours = withHours.length > 0 ? +(totalHours / withHours.length).toFixed(1) : 0
     return { week: k, submissions: wrs.length, avgHours }
   })
 
@@ -255,8 +260,8 @@ export default function TeamInsightsPage() {
             <Card>
               <CardHeader><CardTitle className="text-sm">Avg Hours per Week</CardTitle></CardHeader>
               <CardContent>
-                {submissionTrend.every((d) => d.avgHours === 0) ? (
-                  <p className="text-sm text-muted-foreground text-center py-12">No hours data recorded</p>
+                {reports.every((r) => !r.totalHours) ? (
+                  <p className="text-sm text-muted-foreground text-center py-12">No hours data recorded — fill in the Hours Breakdown when editing a report</p>
                 ) : (
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={submissionTrend}>
@@ -298,6 +303,42 @@ export default function TeamInsightsPage() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          )}
+
+          {/* Workload by project & task type charts */}
+          {taskStats && (taskStats.byProject.length > 0 || taskStats.byCategory.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {taskStats.byProject.length > 0 && (
+                <Card>
+                  <CardHeader><CardTitle className="text-sm">Workload by Project (hours)</CardTitle></CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={taskStats.byProject} layout="vertical" margin={{ left: 0, right: 16, top: 4, bottom: 4 }}>
+                        <XAxis type="number" tick={{ fontSize: 10 }} />
+                        <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} />
+                        <Tooltip formatter={(v) => [`${v}h`, 'Hours']} />
+                        <Bar dataKey="hours" fill={STATUS_CHART_COLORS.APPROVED} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+              {taskStats.byCategory.length > 0 && (
+                <Card>
+                  <CardHeader><CardTitle className="text-sm">Time by Task Type (hours)</CardTitle></CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={taskStats.byCategory} layout="vertical" margin={{ left: 0, right: 16, top: 4, bottom: 4 }}>
+                        <XAxis type="number" tick={{ fontSize: 10 }} />
+                        <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={90} />
+                        <Tooltip formatter={(v) => [`${v}h`, 'Hours']} />
+                        <Bar dataKey="hours" fill={STATUS_CHART_COLORS.SUBMITTED} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
           {/* Member breakdown table */}

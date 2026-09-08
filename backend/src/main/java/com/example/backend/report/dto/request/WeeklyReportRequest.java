@@ -38,6 +38,8 @@ public class WeeklyReportRequest {
 
     private String keyIssue;
 
+    private String keyBlocker;
+
     private String nextWeekPlan;
 
     private String generalNotes;

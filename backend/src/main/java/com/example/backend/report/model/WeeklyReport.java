@@ -75,6 +75,9 @@ public class WeeklyReport extends BaseEntity {
     @Column(length = 500)
     private String keyIssue;
 
+    @Column(length = 500)
+    private String keyBlocker;
+
     @Column(columnDefinition = "TEXT")
     private String nextWeekPlan;
 

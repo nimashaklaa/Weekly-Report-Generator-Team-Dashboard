@@ -22,6 +22,7 @@ import NotificationsPage from '@/pages/notifications/NotificationsPage'
 import ProjectsPage from '@/pages/projects/ProjectsPage'
 import UsersPage from '@/pages/admin/UsersPage'
 import TeamsPage from '@/pages/admin/TeamsPage'
+import AiChatWidget from '@/components/shared/AiChatWidget'
 
 function AppRoutes() {
   const dispatch = useAppDispatch()
@@ -32,6 +33,7 @@ function AppRoutes() {
   }, [token, dispatch])
 
   return (
+    <>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
@@ -105,6 +107,8 @@ function AppRoutes() {
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    {token && <AiChatWidget />}
+    </>
   )
 }
 

@@ -13,4 +13,5 @@ public class DashboardSummaryResponse {
     private int currentWeekNumber;
     private ReportStatusBreakdown reportsThisWeek;
     private long pendingReviews;
+    private long openBlockersCount;
 }

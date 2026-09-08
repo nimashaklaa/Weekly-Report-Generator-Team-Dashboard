@@ -3,14 +3,14 @@ import { dashboardApi } from '@/api/dashboard'
 import { teamsApi } from '@/api/teams'
 import { reportsApi } from '@/api/reports'
 import { useAppSelector } from '@/store/hooks'
-import type { Team, TeamReportStats, WeeklyReportSummary } from '@/types'
+import type { ActivityItem, DashboardSummary, Team, TeamReportStats, WeeklyReportSummary } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import StatusBadge from '@/components/shared/StatusBadge'
 import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
-import { Users, Clock, CheckCircle2, UserCheck } from 'lucide-react'
+import { Users, Clock, CheckCircle2, UserCheck, AlertTriangle } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
@@ -20,6 +20,7 @@ interface TeamSection {
   team: Team
   stats: TeamReportStats | null
   reports: WeeklyReportSummary[]
+  activity: ActivityItem[]
 }
 
 export default function TeamDashboard() {
@@ -27,23 +28,26 @@ export default function TeamDashboard() {
   const currentUser = useAppSelector((s) => s.auth.user)
 
   const [sections, setSections] = useState<TeamSection[]>([])
+  const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [weekLabel, setWeekLabel] = useState('')
 
   useEffect(() => {
     if (!currentUser) return
 
+    dashboardApi.getSummary().then(setSummary).catch(() => {})
+
     teamsApi.getAll({ activeOnly: true, managerId: currentUser.id }).then(async (p) => {
       const teams = p.content
 
-      // Fetch stats + reports for every team in parallel
       const results = await Promise.all(
         teams.map(async (team) => {
-          const [stats, submitted, needsCorrection, approved] = await Promise.allSettled([
+          const [stats, submitted, needsCorrection, approved, activity] = await Promise.allSettled([
             dashboardApi.getTeamStats(team.id),
             reportsApi.getAll({ teamId: team.id, status: 'SUBMITTED', size: 50 }),
             reportsApi.getAll({ teamId: team.id, status: 'NEEDS_CORRECTION', size: 50 }),
             reportsApi.getAll({ teamId: team.id, status: 'APPROVED', size: 50 }),
+            dashboardApi.getTeamActivity(team.id),
           ])
 
           const teamStats = stats.status === 'fulfilled' ? stats.value : null
@@ -57,7 +61,12 @@ export default function TeamDashboard() {
             ...(approved.status === 'fulfilled' ? approved.value.content : []),
           ]
 
-          return { team, stats: teamStats, reports } as TeamSection
+          return {
+            team,
+            stats: teamStats,
+            reports,
+            activity: activity.status === 'fulfilled' ? activity.value : [],
+          } as TeamSection
         })
       )
 
@@ -95,7 +104,7 @@ export default function TeamDashboard() {
         {weekLabel && <p className="text-muted-foreground text-sm">{weekLabel}</p>}
       </div>
 
-      {sections.map(({ team, stats, reports }) => {
+      {sections.map(({ team, stats, reports, activity }) => {
         const chartData = [
           { name: 'Submitted',        status: 'SUBMITTED',        count: reports.filter((r) => r.status === 'SUBMITTED').length },
           { name: 'Needs Correction', status: 'NEEDS_CORRECTION', count: reports.filter((r) => r.status === 'NEEDS_CORRECTION').length },
@@ -114,8 +123,7 @@ export default function TeamDashboard() {
             </div>
 
             {/* KPI cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {/* Total members */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
               <Card className="p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Members</p>
@@ -124,7 +132,6 @@ export default function TeamDashboard() {
                 <p className="text-2xl font-semibold">{stats?.totalMembers ?? team.memberCount}</p>
               </Card>
 
-              {/* Submitted */}
               <Card className="p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Submitted</p>
@@ -146,7 +153,6 @@ export default function TeamDashboard() {
                 )}
               </Card>
 
-              {/* Submission rate */}
               <Card className="p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Rate</p>
@@ -156,7 +162,6 @@ export default function TeamDashboard() {
                 <p className="text-xs text-muted-foreground">this week</p>
               </Card>
 
-              {/* Pending review */}
               <Card className="p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pending Review</p>
@@ -164,6 +169,15 @@ export default function TeamDashboard() {
                 </div>
                 <p className="text-2xl font-semibold">{stats?.statusBreakdown.submitted ?? 0}</p>
                 <p className="text-xs text-muted-foreground">awaiting approval</p>
+              </Card>
+
+              <Card className="p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Open Blockers</p>
+                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <p className="text-2xl font-semibold">{summary?.openBlockersCount ?? 0}</p>
+                <p className="text-xs text-muted-foreground">BLOCKED tasks</p>
               </Card>
             </div>
 
@@ -260,7 +274,45 @@ export default function TeamDashboard() {
               </Card>
             </div>
 
-            {/* Divider between teams */}
+            {/* Recent activity feed */}
+            {activity.length > 0 && (
+              <Card>
+                <CardHeader><CardTitle className="text-sm">Recent Activity</CardTitle></CardHeader>
+                <CardContent className="p-0">
+                  <ul className="divide-y">
+                    {activity.map((item) => (
+                      <li
+                        key={`${item.reportId}-${item.action}`}
+                        className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/40 transition-colors"
+                        onClick={() => navigate(`/reports/${item.reportId}`)}
+                      >
+                        <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold shrink-0 ${
+                          item.action === 'APPROVED'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {item.action === 'APPROVED' ? '✓' : '↩'}
+                        </span>
+                        <span className="text-sm flex-1">
+                          <span className="font-medium">{item.authorName}</span>
+                          {`'s W${item.weekNumber}/${item.weekYear} report was `}
+                          <span className={item.action === 'APPROVED' ? 'text-green-600' : 'text-amber-600'}>
+                            {item.action === 'APPROVED' ? 'approved' : 'sent back for correction'}
+                          </span>
+                          {item.reviewerName && (
+                            <span className="text-muted-foreground"> by {item.reviewerName}</span>
+                          )}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {new Date(item.timestamp).toLocaleDateString()}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="border-b" />
           </div>
         )

@@ -1,19 +1,24 @@
 package com.example.backend.dashboard.service;
 
 import com.example.backend.common.exception.ResourceNotFoundException;
+import com.example.backend.dashboard.dto.ActivityItemResponse;
 import com.example.backend.dashboard.dto.DashboardSummaryResponse;
 import com.example.backend.dashboard.dto.ReportStatusBreakdown;
 import com.example.backend.dashboard.dto.TeamReportStatsResponse;
+import com.example.backend.dashboard.dto.TeamTaskStatsResponse;
 import com.example.backend.dashboard.dto.UserStatsResponse;
 import com.example.backend.project.repository.ProjectRepository;
 import com.example.backend.report.enums.MoodType;
 import com.example.backend.report.enums.ReportStatus;
+import com.example.backend.report.enums.TaskStatus;
+import com.example.backend.report.repository.ReportTaskRepository;
 import com.example.backend.report.repository.WeeklyReportRepository;
 import com.example.backend.team.model.Team;
 import com.example.backend.team.repository.TeamRepository;
 import com.example.backend.user.User;
 import com.example.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +36,7 @@ import java.util.Set;
 public class DashboardService {
 
     private final WeeklyReportRepository reportRepository;
+    private final ReportTaskRepository taskRepository;
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final ProjectRepository projectRepository;
@@ -43,6 +49,9 @@ public class DashboardService {
 
         ReportStatusBreakdown breakdown = buildWeekBreakdown(weekYear, weekNumber);
 
+        long openBlockersCount = taskRepository.countByTaskStatusAndReportStatusNotIn(
+                TaskStatus.BLOCKED, List.of(ReportStatus.DRAFT));
+
         return DashboardSummaryResponse.builder()
                 .totalUsers(userRepository.count())
                 .totalTeams(teamRepository.count())
@@ -51,6 +60,7 @@ public class DashboardService {
                 .currentWeekNumber(weekNumber)
                 .reportsThisWeek(breakdown)
                 .pendingReviews(breakdown.getSubmitted())
+                .openBlockersCount(openBlockersCount)
                 .build();
     }
 
@@ -136,6 +146,49 @@ public class DashboardService {
                 .moodBreakdown(moodBreakdown)
                 .averageHoursPerWeek(avgHours)
                 .build();
+    }
+
+    public TeamTaskStatsResponse getTeamTaskStats(Integer teamId) {
+        var statuses = List.of(ReportStatus.SUBMITTED, ReportStatus.APPROVED);
+
+        List<TeamTaskStatsResponse.NamedHours> byProject = taskRepository
+                .sumHoursByProjectForTeam(teamId, statuses)
+                .stream()
+                .map(row -> TeamTaskStatsResponse.NamedHours.builder()
+                        .name((String) row[0])
+                        .hours(row[1] instanceof BigDecimal bd ? bd.doubleValue() : ((Number) row[1]).doubleValue())
+                        .build())
+                .toList();
+
+        List<TeamTaskStatsResponse.NamedHours> byCategory = taskRepository
+                .sumHoursByCategoryForTeam(teamId, statuses)
+                .stream()
+                .map(row -> TeamTaskStatsResponse.NamedHours.builder()
+                        .name((String) row[0])
+                        .hours(row[1] instanceof BigDecimal bd ? bd.doubleValue() : ((Number) row[1]).doubleValue())
+                        .build())
+                .toList();
+
+        return TeamTaskStatsResponse.builder()
+                .byProject(byProject)
+                .byCategory(byCategory)
+                .build();
+    }
+
+    public List<ActivityItemResponse> getTeamActivity(Integer teamId, int limit) {
+        var statuses = List.of(ReportStatus.APPROVED, ReportStatus.NEEDS_CORRECTION);
+        return reportRepository.findRecentlyReviewedByTeam(teamId, statuses, PageRequest.of(0, limit))
+                .stream()
+                .map(r -> ActivityItemResponse.builder()
+                        .reportId(r.getId())
+                        .authorName(r.getAuthor().fullName())
+                        .reviewerName(r.getReviewer() != null ? r.getReviewer().fullName() : null)
+                        .action(r.getStatus().name())
+                        .weekYear(r.getWeekYear())
+                        .weekNumber(r.getWeekNumber())
+                        .timestamp(r.getReviewedAt())
+                        .build())
+                .toList();
     }
 
     private ReportStatusBreakdown buildWeekBreakdown(int weekYear, int weekNumber) {
