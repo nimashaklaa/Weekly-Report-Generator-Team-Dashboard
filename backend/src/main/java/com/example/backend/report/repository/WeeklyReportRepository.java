@@ -55,6 +55,9 @@ public interface WeeklyReportRepository extends JpaRepository<WeeklyReport, Inte
     @Query("SELECT r.overallMood, COUNT(r) FROM WeeklyReport r WHERE r.author.id = :userId AND r.overallMood IS NOT NULL GROUP BY r.overallMood")
     List<Object[]> countMoodByAuthor(@Param("userId") Integer userId);
 
-    @Query("SELECT AVG(h.total_hours) FROM ReportHoursBreakdown h WHERE h.report.author.id = :userId AND h.total_hours IS NOT NULL")
+    @Query("SELECT AVG(COALESCE(h.total_hours, " +
+           "COALESCE(h.meeting_hours, 0) + COALESCE(h.deep_work_hours, 0) + " +
+           "COALESCE(h.admin_hours, 0) + COALESCE(h.review_hours, 0) + COALESCE(h.other_hours, 0))) " +
+           "FROM ReportHoursBreakdown h WHERE h.report.author.id = :userId")
     BigDecimal avgHoursByAuthor(@Param("userId") Integer userId);
 }

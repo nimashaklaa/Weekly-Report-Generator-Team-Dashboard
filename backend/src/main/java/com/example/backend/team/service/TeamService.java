@@ -57,14 +57,32 @@ public class TeamService {
         return TeamResponse.from(teamRepository.save(team));
     }
 
-    public Page<TeamResponse> getAllTeams(Boolean activeOnly, Integer managerId, Pageable pageable) {
-        if (managerId != null) {
-            return teamRepository.findByManagerId(managerId, pageable).map(TeamResponse::from);
+    public Page<TeamResponse> getAllTeams(Boolean activeOnly, Integer managerId, Pageable pageable, User currentUser) {
+        boolean isAdmin   = hasRole(currentUser, "ADMIN");
+        boolean isManager = hasRole(currentUser, "MANAGER");
+
+        if (isAdmin) {
+            // Admins see everything
+            if (managerId != null) {
+                return teamRepository.findByManagerId(managerId, pageable).map(TeamResponse::from);
+            }
+            return Boolean.TRUE.equals(activeOnly)
+                    ? teamRepository.findAllByIsActive(true, pageable).map(TeamResponse::from)
+                    : teamRepository.findAll(pageable).map(TeamResponse::from);
         }
-        if (Boolean.TRUE.equals(activeOnly)) {
-            return teamRepository.findAllByIsActive(true, pageable).map(TeamResponse::from);
+
+        if (isManager) {
+            // Managers only see teams they own; ignore any managerId param from request
+            return teamRepository.findByManagerId(currentUser.getId(), pageable).map(TeamResponse::from);
         }
-        return teamRepository.findAll(pageable).map(TeamResponse::from);
+
+        // Team members: only teams they belong to (for report creation team selector)
+        return teamRepository.findByMemberId(currentUser.getId(), pageable).map(TeamResponse::from);
+    }
+
+    private boolean hasRole(User user, String roleName) {
+        return user.getRoles() != null &&
+               user.getRoles().stream().anyMatch(r -> r.getName().equals(roleName));
     }
 
     public TeamResponse getTeamById(Integer id) {

@@ -6,6 +6,7 @@ import com.example.backend.team.dto.UpdateMembersRequest;
 import com.example.backend.team.dto.UpdateProjectMembersRequest;
 import com.example.backend.team.dto.UpdateTeamRequest;
 import com.example.backend.team.service.TeamService;
+import com.example.backend.user.User;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,9 +38,10 @@ public class TeamController {
     public ResponseEntity<Page<TeamResponse>> getAllTeams(
             @RequestParam(required = false) Boolean activeOnly,
             @RequestParam(required = false) Integer managerId,
-            @PageableDefault(size = 20, sort = "name") Pageable pageable
+            @PageableDefault(size = 20, sort = "name") Pageable pageable,
+            @AuthenticationPrincipal User currentUser
     ) {
-        return ResponseEntity.ok(teamService.getAllTeams(activeOnly, managerId, pageable));
+        return ResponseEntity.ok(teamService.getAllTeams(activeOnly, managerId, pageable, currentUser));
     }
 
     @GetMapping("/{id}")

@@ -18,5 +18,8 @@ public interface TeamRepository extends JpaRepository<Team, Integer> {
     @Query("SELECT t FROM Team t WHERE t.manager.id = :managerId")
     Page<Team> findByManagerId(@Param("managerId") Integer managerId, Pageable pageable);
 
+    @Query("SELECT t FROM Team t JOIN t.members m WHERE m.id = :userId")
+    Page<Team> findByMemberId(@Param("userId") Integer userId, Pageable pageable);
+
     boolean existsByNameAndIdNot(String name, Integer id);
 }

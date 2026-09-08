@@ -458,8 +458,7 @@ public class ReportService {
                 .currentVersion(r.getCurrentVersion())
                 .submittedAt(r.getSubmittedAt())
                 .createdDate(r.getCreatedDate())
-                .totalHours(r.getHoursBreakdown() != null && r.getHoursBreakdown().getTotal_hours() != null
-                        ? r.getHoursBreakdown().getTotal_hours().doubleValue() : null)
+                .totalHours(computeSummaryTotalHours(r.getHoursBreakdown()))
                 .taskCount(r.getTasks() != null ? r.getTasks().size() : 0)
                 .build();
     }
@@ -506,6 +505,17 @@ public class ReportService {
                 .versionNumber(c.getVersionNumber())
                 .createdDate(c.getCreatedDate())
                 .build();
+    }
+
+    private Double computeSummaryTotalHours(ReportHoursBreakdown hb) {
+        if (hb == null) return null;
+        if (hb.getTotal_hours() != null) return hb.getTotal_hours().doubleValue();
+        BigDecimal sum = java.util.stream.Stream.of(
+                hb.getMeeting_hours(), hb.getDeep_work_hours(),
+                hb.getAdmin_hours(), hb.getReview_hours(), hb.getOther_hours())
+                .filter(v -> v != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return sum.compareTo(BigDecimal.ZERO) > 0 ? sum.doubleValue() : null;
     }
 
     private ReportVersionResponse toVersionResponse(ReportVersion v) {
